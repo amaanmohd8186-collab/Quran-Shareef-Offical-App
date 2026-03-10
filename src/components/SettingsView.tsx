@@ -7,7 +7,7 @@ interface SettingsViewProps {
 }
 
 export default function SettingsView({ setActiveView }: SettingsViewProps) {
-  const upiId = "9719818918-@ybl";
+  const upiId = "9719818918@ybl";
   const upiLink = `upi://pay?pa=${upiId}&pn=Amaan%20Siddiqui&cu=INR`;
   const contactEmail = "amaanmohd8186@gmail.com";
 
@@ -46,13 +46,24 @@ export default function SettingsView({ setActiveView }: SettingsViewProps) {
         </div>
         
         <div className="space-y-4">
-          <a 
-            href={upiLink}
-            className="inline-flex items-center gap-3 px-8 py-4 bg-islamic-green text-white rounded-2xl font-bold shadow-lg shadow-islamic-green/20 hover:bg-islamic-green-dark transition-all transform hover:-translate-y-1"
-          >
-            <Coffee className="w-5 h-5" />
-            Donate via UPI
-          </a>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <a 
+              href={upiLink}
+              className="inline-flex items-center gap-3 px-8 py-4 bg-islamic-green text-white rounded-2xl font-bold shadow-lg shadow-islamic-green/20 hover:bg-islamic-green-dark transition-all transform hover:-translate-y-1"
+            >
+              <Coffee className="w-5 h-5" />
+              Donate via UPI
+            </a>
+            <button 
+              onClick={() => {
+                navigator.clipboard.writeText(upiId);
+                alert('UPI ID copied! You can now paste it in any payment app.');
+              }}
+              className="inline-flex items-center gap-3 px-8 py-4 bg-white text-islamic-green border-2 border-islamic-green rounded-2xl font-bold hover:bg-islamic-green/5 transition-all"
+            >
+              Copy UPI ID
+            </button>
+          </div>
           <p className="text-[10px] text-slate-400 font-mono uppercase tracking-widest">UPI ID: {upiId}</p>
         </div>
       </div>

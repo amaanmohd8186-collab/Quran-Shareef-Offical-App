@@ -34,6 +34,7 @@ export default function QuranView() {
   const [showReciterMenu, setShowReciterMenu] = useState(false);
   const [selectedTranslation, setSelectedTranslation] = useState(TRANSLATIONS[0].id);
   const [showTranslationMenu, setShowTranslationMenu] = useState(false);
+  const [targetAyah, setTargetAyah] = useState<number | null>(null);
   
   // Bookmarks State
   const [bookmarks, setBookmarks] = useState<BookmarkType[]>([]);
@@ -66,6 +67,17 @@ export default function QuranView() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (selectedSurah && targetAyah) {
+      const element = document.getElementById(`ayah-${targetAyah}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setActiveAyahNumber(targetAyah);
+        setTargetAyah(null);
+      }
+    }
+  }, [selectedSurah, targetAyah]);
 
   const loadBookmarks = () => {
     const saved = localStorage.getItem('quran_bookmarks');
@@ -199,7 +211,9 @@ export default function QuranView() {
     }
   };
 
-  const fetchSurahDetail = async (number: number, translationId = selectedTranslation) => {
+  const fetchSurahDetail = async (number: number, translationId = selectedTranslation, ayahToScroll?: number) => {
+    if (ayahToScroll) setTargetAyah(ayahToScroll);
+    
     // Try to load from cache first
     const cacheKey = `quran_surah_${number}_${translationId}`;
     const cachedData = localStorage.getItem(cacheKey);
@@ -669,10 +683,15 @@ export default function QuranView() {
 
                 <button 
                   onClick={() => setShowBookmarks(true)}
-                  className="flex items-center gap-2 px-6 py-2 bg-white border border-slate-100 rounded-full text-sm font-medium text-slate-600 hover:text-rose-500 transition-all shadow-sm"
+                  className="flex items-center gap-2 px-6 py-2 bg-white border border-slate-100 rounded-full text-sm font-medium text-slate-600 hover:text-rose-500 transition-all shadow-sm relative group"
                 >
                   <Heart className={cn("w-4 h-4", bookmarks.length > 0 && "fill-rose-500 text-rose-500")} />
                   <span>Bookmarks</span>
+                  {bookmarks.length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                      {bookmarks.length}
+                    </span>
+                  )}
                 </button>
 
                 {isPlaying && (
@@ -866,24 +885,6 @@ export default function QuranView() {
                 </div>
               </div>
 
-              <button 
-                onClick={() => playSurahAudio(selectedSurah.number)}
-                disabled={isAudioLoading}
-                className={cn(
-                  "flex items-center gap-2 px-6 py-3 rounded-2xl transition-all font-bold shadow-lg",
-                  isPlaying && currentAudioUrl?.includes(`audio-surah`) 
-                    ? "bg-islamic-gold text-white shadow-islamic-gold/20" 
-                    : "bg-islamic-green text-white shadow-islamic-green/20 hover:bg-islamic-green/90",
-                  isAudioLoading && "opacity-70 cursor-not-allowed"
-                )}
-              >
-                {isAudioLoading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  isPlaying && currentAudioUrl?.includes(`audio-surah`) ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />
-                )}
-                {isAudioLoading ? "Loading..." : (isPlaying && currentAudioUrl?.includes(`audio-surah`) ? "Playing Surah" : "Listen Surah")}
-              </button>
             </div>
 
             {audioError && (
@@ -929,6 +930,7 @@ export default function QuranView() {
                 {selectedSurah.ayahs.map((ayah: any) => (
                   <div 
                     key={ayah.number} 
+                    id={`ayah-${ayah.numberInSurah}`}
                     onClick={() => playAyahAudio(ayah.number, ayah.numberInSurah, ayah.surah?.number || selectedSurah.number)}
                     className={cn(
                       "flex flex-col space-y-6 pb-8 border-bottom border-slate-50 last:border-0 transition-all rounded-2xl p-4 cursor-pointer hover:bg-islamic-green/[0.02]",
@@ -995,7 +997,7 @@ export default function QuranView() {
                           )}
                           title="Bookmark Ayah"
                         >
-                          <Heart className={cn("w-4 h-4", bookmarks.find(b => b.id === `ayah:${selectedSurah.number}:${ayah.numberInSurah}`) && "fill-current")} />
+                          <Bookmark className={cn("w-4 h-4", bookmarks.find(b => b.id === `ayah:${selectedSurah.number}:${ayah.numberInSurah}`) && "fill-current")} />
                         </button>
                       </div>
                       <p className="arabic-text text-3xl text-right leading-[2.5] text-slate-800 flex-1">
@@ -1048,12 +1050,28 @@ export default function QuranView() {
                     <p className="text-sm text-slate-500">{bookmarks.length} saved items</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setShowBookmarks(false)}
-                  className="p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-full transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  {bookmarks.length > 0 && (
+                    <button
+                      onClick={() => {
+                        if (confirm('Are you sure you want to clear all bookmarks?')) {
+                          setBookmarks([]);
+                          localStorage.setItem('quran_bookmarks', JSON.stringify([]));
+                        }
+                      }}
+                      className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      Clear All
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowBookmarks(false)}
+                    className="p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-full transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
               
               <div className="p-6 overflow-y-auto flex-1 bg-slate-50/50">
@@ -1106,7 +1124,7 @@ export default function QuranView() {
                             if (bookmark.type === 'surah') {
                               fetchSurahDetail(bookmark.surahNumber);
                             } else {
-                              fetchSurahDetail(bookmark.surahNumber);
+                              fetchSurahDetail(bookmark.surahNumber, selectedTranslation, bookmark.ayahNumber);
                             }
                             setShowBookmarks(false);
                           }}

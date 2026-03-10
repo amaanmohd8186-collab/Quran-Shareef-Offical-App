@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, ArrowLeft } from 'lucide-react';
+import { Shield, ArrowLeft, Heart } from 'lucide-react';
 import { AppView } from '../types';
 
 interface PrivacyViewProps {
@@ -64,6 +64,35 @@ export default function PrivacyView({ setActiveView }: PrivacyViewProps) {
             If you have any questions about this policy, please contact us at <a href="mailto:amaanmohd8186@gmail.com" className="text-islamic-green font-bold hover:underline">amaanmohd8186@gmail.com</a>.
           </p>
         </section>
+
+        <div className="pt-6 border-t border-slate-100">
+          <div className="bg-islamic-green/5 rounded-2xl p-6 text-center space-y-4">
+            <div className="flex items-center justify-center gap-2 text-islamic-green">
+              <Heart className="w-5 h-5 fill-current" />
+              <h4 className="font-bold">Support Our Mission</h4>
+            </div>
+            <p className="text-sm text-slate-600">
+              Your support helps us keep Al-Huda free and accessible for everyone.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <a 
+                href={`upi://pay?pa=9719818918@ybl&pn=Amaan%20Siddiqui&cu=INR`}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-islamic-green text-white rounded-xl font-bold text-sm hover:bg-islamic-green-dark transition-all shadow-sm"
+              >
+                Donate via UPI
+              </a>
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText("9719818918@ybl");
+                  alert('UPI ID copied!');
+                }}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-islamic-green border border-islamic-green rounded-xl font-bold text-sm hover:bg-islamic-green/5 transition-all"
+              >
+                Copy UPI ID
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="text-center pt-8">

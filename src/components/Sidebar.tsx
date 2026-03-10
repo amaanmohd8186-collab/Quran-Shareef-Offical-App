@@ -54,8 +54,23 @@ export default function Sidebar({ activeView, setActiveView, isOpen, setIsOpen }
         !isOpen && "-translate-x-full"
       )}>
         <div className="p-8 flex items-center gap-3">
-          <div className="w-10 h-10 bg-islamic-green rounded-2xl flex items-center justify-center text-white shadow-lg shadow-islamic-green/20">
-            <Book className="w-6 h-6" />
+          <div className="w-10 h-10 bg-islamic-green rounded-2xl flex items-center justify-center overflow-hidden shadow-lg shadow-islamic-green/20">
+            <img 
+              src="/app-logo.jpg" 
+              alt="Quran Shareef Logo" 
+              className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                // Fallback to icon if image fails to load
+                e.currentTarget.style.display = 'none';
+                const parent = e.currentTarget.parentElement;
+                if (parent) {
+                  const icon = document.createElement('div');
+                  icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book w-6 h-6 text-white"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>';
+                  parent.appendChild(icon.firstChild as Node);
+                }
+              }}
+            />
           </div>
           <h1 className="text-2xl font-serif font-bold text-islamic-green tracking-tight">Quran Shareef</h1>
           <button 

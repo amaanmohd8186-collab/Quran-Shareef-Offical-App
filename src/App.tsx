@@ -13,7 +13,7 @@ import PrivacyView from './components/PrivacyView';
 import HomeView from './components/HomeView';
 import PrayerAlarmView from './components/PrayerAlarmView';
 import { AppView } from './types';
-import { Menu, Volume2, X } from 'lucide-react';
+import { Menu, Volume2, X, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const DEFAULT_RINGTONES = [
@@ -152,17 +152,42 @@ export default function App() {
         {/* Header for mobile */}
         <header className="lg:hidden flex items-center justify-between p-4 bg-white border-b border-slate-100">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-islamic-green rounded-lg flex items-center justify-center text-white">
-              <span className="font-serif font-bold">Q</span>
+            <div className="w-8 h-8 bg-islamic-green rounded-lg flex items-center justify-center overflow-hidden">
+              <img 
+                src="/app-logo.jpg" 
+                alt="Quran Shareef Logo" 
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  // Fallback to text if image fails to load
+                  e.currentTarget.style.display = 'none';
+                  const parent = e.currentTarget.parentElement;
+                  if (parent) {
+                    const span = document.createElement('span');
+                    span.className = 'font-serif font-bold text-white';
+                    span.innerText = 'Q';
+                    parent.appendChild(span);
+                  }
+                }}
+              />
             </div>
             <h1 className="text-xl font-serif font-bold text-islamic-green">Quran Shareef</h1>
           </div>
-          <button 
-            onClick={() => setIsSidebarOpen(true)}
-            className="p-2 text-slate-500 hover:text-islamic-green"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
+          <div className="flex items-center gap-2">
+            <a 
+              href={`upi://pay?pa=9719818918@ybl&pn=Amaan%20Siddiqui&cu=INR`}
+              className="flex items-center gap-1 px-3 py-1.5 bg-islamic-green/10 text-islamic-green rounded-full text-xs font-bold hover:bg-islamic-green/20 transition-colors"
+            >
+              <Heart className="w-3 h-3 fill-current" />
+              Donate
+            </a>
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="p-2 text-slate-500 hover:text-islamic-green"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+          </div>
         </header>
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12">

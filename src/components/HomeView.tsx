@@ -27,9 +27,25 @@ export default function HomeView({ setActiveView }: HomeViewProps) {
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="w-20 h-20 bg-islamic-green rounded-3xl flex items-center justify-center text-white mx-auto shadow-xl shadow-islamic-green/20"
+          className="w-24 h-24 bg-islamic-green rounded-3xl flex items-center justify-center overflow-hidden mx-auto shadow-xl shadow-islamic-green/20"
         >
-          <span className="text-4xl font-serif font-bold">Q</span>
+          <img 
+            src="/app-logo.jpg" 
+            alt="Quran Shareef Logo" 
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+              // Fallback to text if image fails to load
+              e.currentTarget.style.display = 'none';
+              const parent = e.currentTarget.parentElement;
+              if (parent) {
+                const span = document.createElement('span');
+                span.className = 'text-4xl font-serif font-bold text-white';
+                span.innerText = 'Q';
+                parent.appendChild(span);
+              }
+            }}
+          />
         </motion.div>
         <div className="space-y-2">
           <h2 className="text-4xl font-serif font-bold text-islamic-green">Welcome to Quran Shareef</h2>
