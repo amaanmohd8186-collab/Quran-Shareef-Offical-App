@@ -9,6 +9,7 @@ import QiblaView from './components/QiblaView';
 import HidayatView from './components/HidayatView';
 import TasbeehView from './components/TasbeehView';
 import SettingsView from './components/SettingsView';
+import PrivacyView from './components/PrivacyView';
 import HomeView from './components/HomeView';
 import PrayerAlarmView from './components/PrayerAlarmView';
 import { AppView } from './types';
@@ -104,7 +105,9 @@ export default function App() {
       case 'prayer_alarm':
         return <PrayerAlarmView />;
       case 'settings':
-        return <SettingsView />;
+        return <SettingsView setActiveView={setActiveView} />;
+      case 'privacy':
+        return <PrivacyView setActiveView={setActiveView} />;
       default:
         return <HomeView setActiveView={setActiveView} />;
     }

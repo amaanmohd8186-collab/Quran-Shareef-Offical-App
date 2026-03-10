@@ -1,7 +1,12 @@
 import React from 'react';
-import { Heart, Mail, Shield, User, ExternalLink, Coffee } from 'lucide-react';
+import { Heart, Mail, Shield, User, ExternalLink, Coffee, ArrowRight } from 'lucide-react';
+import { AppView } from '../types';
 
-export default function SettingsView() {
+interface SettingsViewProps {
+  setActiveView: (view: AppView) => void;
+}
+
+export default function SettingsView({ setActiveView }: SettingsViewProps) {
   const upiId = "9719818918-@ybl";
   const upiLink = `upi://pay?pa=${upiId}&pn=Amaan%20Siddiqui&cu=INR`;
   const contactEmail = "amaanmohd8186@gmail.com";
@@ -54,18 +59,16 @@ export default function SettingsView() {
 
       {/* Links & Policy */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <a 
-          href="/privacy.html"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-between p-5 bg-white rounded-2xl border border-slate-100 hover:border-islamic-green/30 hover:bg-islamic-green/5 transition-all group w-full"
+        <button 
+          onClick={() => setActiveView('privacy')}
+          className="flex items-center justify-between p-5 bg-white rounded-2xl border border-slate-100 hover:border-islamic-green/30 hover:bg-islamic-green/5 transition-all group w-full text-left"
         >
           <div className="flex items-center gap-3">
             <Shield className="w-5 h-5 text-islamic-green" />
             <span className="font-bold text-slate-700">Privacy Policy</span>
           </div>
-          <ExternalLink className="w-4 h-4 text-slate-300 group-hover:text-islamic-green" />
-        </a>
+          <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-islamic-green" />
+        </button>
 
         <a 
           href={`mailto:${contactEmail}`}
