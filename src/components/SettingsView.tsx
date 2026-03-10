@@ -58,17 +58,40 @@ export default function SettingsView({ setActiveView }: SettingsViewProps) {
       </div>
 
       {/* Links & Policy */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <button 
-          onClick={() => setActiveView('privacy')}
-          className="flex items-center justify-between p-5 bg-white rounded-2xl border border-slate-100 hover:border-islamic-green/30 hover:bg-islamic-green/5 transition-all group w-full text-left"
-        >
-          <div className="flex items-center gap-3">
-            <Shield className="w-5 h-5 text-islamic-green" />
-            <span className="font-bold text-slate-700">Privacy Policy</span>
+      <div className="space-y-4">
+        <div className="bg-white rounded-3xl p-6 border border-slate-100 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Shield className="w-5 h-5 text-islamic-green" />
+              <span className="font-bold text-slate-700">Privacy Policy</span>
+            </div>
+            <button 
+              onClick={() => setActiveView('privacy')}
+              className="text-sm font-bold text-islamic-green hover:underline"
+            >
+              View In-App
+            </button>
           </div>
-          <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-islamic-green" />
-        </button>
+          <div className="p-4 bg-slate-50 rounded-2xl space-y-2">
+            <p className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Play Store Privacy URL</p>
+            <div className="flex items-center justify-between gap-2">
+              <code className="text-xs text-slate-600 break-all bg-white p-2 rounded-lg border border-slate-200 flex-1">
+                {window.location.origin}/privacy.html
+              </code>
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(`${window.location.origin}/privacy.html`);
+                  alert('URL copied to clipboard!');
+                }}
+                className="p-2 hover:bg-islamic-green/10 rounded-xl text-islamic-green transition-colors"
+                title="Copy URL"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-[9px] text-slate-400">Use this URL when submitting your app to the Google Play Store.</p>
+          </div>
+        </div>
 
         <a 
           href={`mailto:${contactEmail}`}
