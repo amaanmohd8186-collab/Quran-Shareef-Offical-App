@@ -1,0 +1,5 @@
+{
+  "name": "Quran Shareef - With Voice & Offline",
+  "description": "A comprehensive Quran application with high-quality recitations, offline audio support, AI Islamic assistant, prayer alarms, and more.",
+  "requestFramePermissions": ["microphone", "geolocation"]
+}

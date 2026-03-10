@@ -1,0 +1,104 @@
+import React from 'react';
+import { Book, MessageSquare, BrainCircuit, Settings, Moon, Sun, Menu, X, Heart, Compass, Sparkles, Fingerprint, Home, Bell } from 'lucide-react';
+import { AppView } from '../types';
+import { cn } from '../lib/utils';
+
+interface SidebarProps {
+  activeView: AppView;
+  setActiveView: (view: AppView) => void;
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+}
+
+const DAILY_VERSES = [
+  { text: "Verily, with hardship comes ease.", ref: "94:6" },
+  { text: "And He found you lost and guided [you].", ref: "93:7" },
+  { text: "My mercy encompasses all things.", ref: "7:156" },
+  { text: "So remember Me; I will remember you.", ref: "2:152" },
+  { text: "Allah does not burden a soul beyond that it can bear.", ref: "2:286" },
+  { text: "Indeed, Allah is with the patient.", ref: "2:153" },
+  { text: "And put your trust in Allah, and enough is Allah as a disposer of affairs.", ref: "33:3" }
+];
+
+export default function Sidebar({ activeView, setActiveView, isOpen, setIsOpen }: SidebarProps) {
+  const today = new Date().toDateString();
+  const verseIndex = Math.abs(today.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % DAILY_VERSES.length;
+  const dailyVerse = DAILY_VERSES[verseIndex];
+
+  const menuItems = [
+    { id: 'home', label: 'Home', icon: Home },
+    { id: 'quran', label: 'Holy Quran', icon: Book },
+    { id: 'assistant', label: 'Quran AI', icon: MessageSquare },
+    { id: 'hadith', label: 'Hadith', icon: MessageSquare },
+    { id: 'dua', label: 'Duas', icon: Heart },
+    { id: 'qibla', label: 'Qibla', icon: Compass },
+    { id: 'prayer_alarm', label: 'Prayer Alarm', icon: Bell },
+    { id: 'tasbeeh', label: 'Tasbeeh', icon: Fingerprint },
+    { id: 'hidayat', label: 'Hidayat', icon: Sparkles },
+    { id: 'quiz', label: 'Islamic Quiz', icon: BrainCircuit },
+    { id: 'settings', label: 'Settings', icon: Settings },
+  ];
+
+  return (
+    <>
+      {/* Mobile Backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      <aside className={cn(
+        "fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-100 flex flex-col transition-transform duration-300 ease-in-out lg:static lg:translate-x-0",
+        !isOpen && "-translate-x-full"
+      )}>
+        <div className="p-8 flex items-center gap-3">
+          <div className="w-10 h-10 bg-islamic-green rounded-2xl flex items-center justify-center text-white shadow-lg shadow-islamic-green/20">
+            <Book className="w-6 h-6" />
+          </div>
+          <h1 className="text-2xl font-serif font-bold text-islamic-green tracking-tight">Quran Shareef</h1>
+          <button 
+            className="lg:hidden ml-auto p-2 text-slate-400 hover:text-islamic-green"
+            onClick={() => setIsOpen(false)}
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        <nav className="flex-1 px-4 py-4 space-y-2">
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                setActiveView(item.id as AppView);
+                setIsOpen(false);
+              }}
+              className={cn(
+                "w-full flex items-center gap-4 px-4 py-3 rounded-2xl transition-all group",
+                activeView === item.id 
+                  ? "bg-islamic-green text-white shadow-md shadow-islamic-green/10" 
+                  : "text-slate-500 hover:bg-islamic-green/5 hover:text-islamic-green"
+              )}
+            >
+              <item.icon className={cn(
+                "w-5 h-5 transition-colors",
+                activeView === item.id ? "text-white" : "text-slate-400 group-hover:text-islamic-green"
+              )} />
+              <span className="font-medium">{item.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="p-6 mt-auto border-t border-slate-50">
+          <div className="bg-islamic-green/5 rounded-2xl p-4">
+            <p className="text-xs text-islamic-green font-serif italic mb-1">Daily Verse</p>
+            <p className="text-[10px] text-slate-600 leading-relaxed">
+              "{dailyVerse.text}" ({dailyVerse.ref})
+            </p>
+          </div>
+        </div>
+      </aside>
+    </>
+  );
+}
