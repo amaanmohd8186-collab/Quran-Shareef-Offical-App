@@ -3,6 +3,7 @@ import { Search, BookOpen, ChevronRight, Loader2, Play, Pause, Volume2, SkipBack
 import { Surah, SurahDetail, Ayah, Bookmark as BookmarkType } from '../types';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
+import surahsData from '../data/surahs.json';
 
 const RECITERS = [
   { id: 'ar.alafasy', name: 'Mishary Rashid Alafasy' },
@@ -173,22 +174,32 @@ export default function QuranView() {
   };
 
   const fetchSurahs = async () => {
-    // Try to load from cache first
-    const cachedData = localStorage.getItem('quran_surah_list');
-    if (cachedData) {
-      setSurahs(JSON.parse(cachedData));
-      setLoading(false);
-    }
+    setSurahs(surahsData as Surah[]);
+    setLoading(false);
+  };
 
+  const prefetchTafsir = async (surahNum: number) => {
     try {
-      const response = await fetch('https://api.alquran.cloud/v1/surah');
-      const data = await response.json();
-      setSurahs(data.data);
-      localStorage.setItem('quran_surah_list', JSON.stringify(data.data));
-    } catch (error) {
-      console.error('Error fetching surahs:', error);
-    } finally {
-      setLoading(false);
+      const cacheKey = `quran_tafsir_surah_${surahNum}`;
+      const hindiCacheKey = `quran_tafsir_hindi_surah_${surahNum}`;
+      
+      const fetchEnglish = async () => {
+        if (localStorage.getItem(cacheKey)) return;
+        const response = await fetch(`https://api.quran.com/api/v4/tafsirs/169/by_chapter/${surahNum}?per_page=300`);
+        if (!response.ok) return;
+        const data = await response.json();
+        
+        const tafsirMap: Record<number, string> = {};
+        data.tafsirs.forEach((t: any) => {
+          const ayahNum = parseInt(t.verse_key.split(':')[1]);
+          tafsirMap[ayahNum] = t.text;
+        });
+        localStorage.setItem(cacheKey, JSON.stringify(tafsirMap));
+      };
+
+      await fetchEnglish();
+    } catch (e) {
+      console.error("Failed to prefetch tafsir", e);
     }
   };
 
@@ -199,11 +210,31 @@ export default function QuranView() {
     setIsTafsirLoading(true);
     
     try {
-      // 169 is Ibn Kathir (English)
-      const response = await fetch(`https://api.quran.com/api/v4/tafsirs/169/by_ayah/${surahNum}:${ayahNum}`);
-      if (!response.ok) throw new Error('Failed to fetch Tafsir');
-      const data = await response.json();
-      setTafsirContent(data.tafsir.text);
+      const cacheKey = `quran_tafsir_surah_${surahNum}`;
+      const cached = localStorage.getItem(cacheKey);
+      
+      let hasEnglish = false;
+      let englishText = '';
+
+      if (cached) {
+        const tafsirMap = JSON.parse(cached);
+        if (tafsirMap[ayahNum]) {
+          englishText = tafsirMap[ayahNum];
+          setTafsirContent(englishText);
+          hasEnglish = true;
+        }
+      }
+
+      if (!hasEnglish) {
+        const res = await fetch(`https://api.quran.com/api/v4/tafsirs/169/by_ayah/${surahNum}:${ayahNum}`);
+        const data = await res.json();
+        englishText = data.tafsir.text;
+        setTafsirContent(englishText);
+        const map = cached ? JSON.parse(cached) : {};
+        map[ayahNum] = englishText;
+        localStorage.setItem(cacheKey, JSON.stringify(map));
+      }
+      
     } catch (err) {
       setTafsirError("Could not load Tafsir. Please try again later.");
     } finally {
@@ -214,6 +245,11 @@ export default function QuranView() {
   const fetchSurahDetail = async (number: number, translationId = selectedTranslation, ayahToScroll?: number) => {
     if (ayahToScroll) setTargetAyah(ayahToScroll);
     
+    // Background prefetch (deferred to not block main content loading)
+    setTimeout(() => {
+      prefetchTafsir(number);
+    }, 1500);
+
     // Try to load from cache first
     const cacheKey = `quran_surah_${number}_${translationId}`;
     const cachedData = localStorage.getItem(cacheKey);
@@ -224,21 +260,19 @@ export default function QuranView() {
 
     setLoadingDetail(true);
     try {
-      const [arabicRes, translationRes] = await Promise.all([
-        fetch(`https://api.alquran.cloud/v1/surah/${number}/quran-uthmani`),
-        fetch(`https://api.alquran.cloud/v1/surah/${number}/${translationId}`)
-      ]);
+      const response = await fetch(`https://api.alquran.cloud/v1/surah/${number}/editions/quran-uthmani,${translationId}`);
+      const data = await response.json();
       
-      const arabicData = await arabicRes.json();
-      const translationData = await translationRes.json();
+      const arabicData = data.data[0];
+      const translationData = data.data[1];
       
-      const combinedAyahs = arabicData.data.ayahs.map((ayah: Ayah, index: number) => ({
+      const combinedAyahs = arabicData.ayahs.map((ayah: Ayah, index: number) => ({
         ...ayah,
-        translation: translationData.data.ayahs[index].text
+        translation: translationData.ayahs[index].text
       }));
 
       const fullData = {
-        ...arabicData.data,
+        ...arabicData,
         ayahs: combinedAyahs
       };
 
@@ -1161,15 +1195,17 @@ export default function QuranView() {
             >
               <div className="flex items-center justify-between p-6 border-b border-slate-100">
                 <div>
-                  <h3 className="text-xl font-bold text-slate-800">Tafsir Ibn Kathir</h3>
+                  <h3 className="text-xl font-bold text-slate-800">Tafsir / Meaning</h3>
                   <p className="text-sm text-slate-500">Surah {selectedSurah?.englishName} • Ayah {selectedTafsir.ayahNum}</p>
                 </div>
-                <button
-                  onClick={() => setSelectedTafsir(null)}
-                  className="p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-full transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => setSelectedTafsir(null)}
+                    className="p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-full transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
               
               <div className="p-6 overflow-y-auto flex-1 bg-slate-50/50">

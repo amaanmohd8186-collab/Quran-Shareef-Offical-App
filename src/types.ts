@@ -42,4 +42,4 @@ export interface Bookmark {
   timestamp: number;
 }
 
-export type AppView = 'home' | 'quran' | 'assistant' | 'quiz' | 'hadith' | 'dua' | 'qibla' | 'hidayat' | 'tasbeeh' | 'settings' | 'prayer_alarm' | 'privacy';
+export type AppView = 'home' | 'quran' | 'assistant' | 'quiz' | 'hadith' | 'dua' | 'hidayat' | 'tasbeeh' | 'settings' | 'prayer_alarm' | 'privacy';

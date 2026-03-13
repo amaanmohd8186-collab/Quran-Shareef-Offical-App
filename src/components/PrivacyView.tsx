@@ -33,21 +33,21 @@ export default function PrivacyView({ setActiveView }: PrivacyViewProps) {
         <section className="space-y-4">
           <h3 className="text-xl font-bold text-islamic-green">1. Information We Collect</h3>
           <p className="text-slate-600 leading-relaxed">
-            Al-Huda is designed with privacy in mind. We do not collect personal identification information. Any data like your name or preferences are stored locally on your device using browser storage.
+            Quran Shareef is designed with absolute privacy in mind. We do not ask for any permissions (like location or microphone), nor do we collect any personal identification information such as your name, email, or phone number. Any preferences (like bookmarks or settings) are stored locally on your device using browser storage.
           </p>
         </section>
 
         <section className="space-y-4">
           <h3 className="text-xl font-bold text-islamic-green">2. AI Assistant</h3>
           <p className="text-slate-600 leading-relaxed">
-            When you interact with Al-Huda AI, your queries are processed by Google's Gemini API. We do not store your chat history on our servers; it remains on your device.
+            When you interact with the Quran AI, your queries are processed securely. We do not store your chat history on any servers; it remains entirely on your device.
           </p>
         </section>
 
         <section className="space-y-4">
-          <h3 className="text-xl font-bold text-islamic-green">3. Location Data</h3>
+          <h3 className="text-xl font-bold text-islamic-green">3. No Permissions Required</h3>
           <p className="text-slate-600 leading-relaxed">
-            The Qibla Finder requires location access to calculate the direction of the Kaaba. This data is processed locally in your browser and is never shared or stored by us.
+            This app does not require access to your location, microphone, camera, or any other sensitive device features. You can use all features with complete peace of mind.
           </p>
         </section>
 

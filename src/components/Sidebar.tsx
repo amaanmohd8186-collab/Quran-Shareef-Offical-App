@@ -31,7 +31,6 @@ export default function Sidebar({ activeView, setActiveView, isOpen, setIsOpen }
     { id: 'assistant', label: 'Quran AI', icon: MessageSquare },
     { id: 'hadith', label: 'Hadith', icon: MessageSquare },
     { id: 'dua', label: 'Duas', icon: Heart },
-    { id: 'qibla', label: 'Qibla', icon: Compass },
     { id: 'prayer_alarm', label: 'Prayer Alarm', icon: Bell },
     { id: 'tasbeeh', label: 'Tasbeeh', icon: Fingerprint },
     { id: 'hidayat', label: 'Hidayat', icon: Sparkles },

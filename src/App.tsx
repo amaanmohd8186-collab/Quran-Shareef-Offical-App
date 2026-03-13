@@ -5,7 +5,6 @@ import AIAssistant from './components/AIAssistant';
 import QuizView from './components/QuizView';
 import HadithView from './components/HadithView';
 import DuaView from './components/DuaView';
-import QiblaView from './components/QiblaView';
 import HidayatView from './components/HidayatView';
 import TasbeehView from './components/TasbeehView';
 import SettingsView from './components/SettingsView';
@@ -16,15 +15,7 @@ import { AppView } from './types';
 import { Menu, Volume2, X, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-const DEFAULT_RINGTONES = [
-  { id: 'azan1', name: 'Azan 1 (Makkah)', url: 'https://www.islamcan.com/audio/adhan/azan1.mp3' },
-  { id: 'azan2', name: 'Azan 2 (Madinah)', url: 'https://www.islamcan.com/audio/adhan/azan2.mp3' },
-  { id: 'azan3', name: 'Azan 3 (Egypt)', url: 'https://www.islamcan.com/audio/adhan/azan3.mp3' },
-  { id: 'azan4', name: 'Azan 4 (Al-Aqsa)', url: 'https://www.islamcan.com/audio/adhan/azan4.mp3' },
-  { id: 'azan5', name: 'Azan 5 (Turkey)', url: 'https://www.islamcan.com/audio/adhan/azan5.mp3' },
-  { id: 'azan6', name: 'Azan 6 (Bosnia)', url: 'https://www.islamcan.com/audio/adhan/azan6.mp3' },
-  { id: 'beep', name: 'Soft Beep', url: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3' },
-];
+const DEFAULT_AZAN_URL = 'https://www.islamcan.com/audio/adhan/azan1.mp3';
 
 export default function App() {
   const [activeView, setActiveView] = useState<AppView>('home');
@@ -33,11 +24,9 @@ export default function App() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    const savedRingtone = localStorage.getItem('prayer_ringtone') || 'azan1';
-    const custom = JSON.parse(localStorage.getItem('custom_ringtones') || '[]');
-    const all = [...DEFAULT_RINGTONES, ...custom];
-    const ringtoneUrl = all.find(r => r.id === savedRingtone)?.url || DEFAULT_RINGTONES[0].url;
-    audioRef.current = new Audio(ringtoneUrl);
+    if (!audioRef.current) {
+      audioRef.current = new Audio(DEFAULT_AZAN_URL);
+    }
     
     const checkAlarms = () => {
       const now = new Date();
@@ -50,14 +39,8 @@ export default function App() {
       const triggered = alarms.find((a: any) => a.enabled && a.time === currentTime);
 
       if (triggered && !isAlarmPlaying) {
-        // Refresh ringtone from storage in case it changed
-        const currentRingtone = localStorage.getItem('prayer_ringtone') || 'azan1';
-        const customRingtones = JSON.parse(localStorage.getItem('custom_ringtones') || '[]');
-        const allRingtones = [...DEFAULT_RINGTONES, ...customRingtones];
-        const currentUrl = allRingtones.find(r => r.id === currentRingtone)?.url || DEFAULT_RINGTONES[0].url;
-        
         if (audioRef.current) {
-          audioRef.current.src = currentUrl;
+          audioRef.current.src = DEFAULT_AZAN_URL;
           audioRef.current.play().catch(e => console.error("Global Azan failed:", e));
         }
         setIsAlarmPlaying(true);
@@ -94,8 +77,6 @@ export default function App() {
         return <HadithView />;
       case 'dua':
         return <DuaView />;
-      case 'qibla':
-        return <QiblaView />;
       case 'tasbeeh':
         return <TasbeehView />;
       case 'hidayat':
@@ -103,7 +84,7 @@ export default function App() {
       case 'quiz':
         return <QuizView />;
       case 'prayer_alarm':
-        return <PrayerAlarmView />;
+        return <PrayerAlarmView isAlarmPlaying={isAlarmPlaying} stopAlarm={stopAlarm} />;
       case 'settings':
         return <SettingsView setActiveView={setActiveView} />;
       case 'privacy':

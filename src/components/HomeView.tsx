@@ -13,7 +13,6 @@ export default function HomeView({ setActiveView }: HomeViewProps) {
     { id: 'assistant', label: 'Al-Huda AI', icon: MessageSquare, color: 'bg-blue-50 text-blue-600', desc: 'Ask questions about Islam' },
     { id: 'hadith', label: 'Hadith', icon: Quote, color: 'bg-amber-50 text-amber-600', desc: 'Wisdom from the Prophet (PBUH)' },
     { id: 'dua', label: 'Duas', icon: Heart, color: 'bg-pink-50 text-pink-600', desc: 'Supplications for every occasion' },
-    { id: 'qibla', label: 'Qibla', icon: Compass, color: 'bg-indigo-50 text-indigo-600', desc: 'Find the direction of Kaaba' },
     { id: 'tasbeeh', label: 'Tasbeeh', icon: Fingerprint, color: 'bg-teal-50 text-teal-600', desc: 'Digital counter for Dhikr' },
     { id: 'hidayat', label: 'Hidayat', icon: Sparkles, color: 'bg-purple-50 text-purple-600', desc: 'Daily guidance and inspiration' },
     { id: 'quiz', label: 'Islamic Quiz', icon: BrainCircuit, color: 'bg-orange-50 text-orange-600', desc: 'Test your Islamic knowledge' },
