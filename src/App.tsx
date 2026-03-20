@@ -11,8 +11,12 @@ import SettingsView from './components/SettingsView';
 import PrivacyView from './components/PrivacyView';
 import HomeView from './components/HomeView';
 import PrayerAlarmView from './components/PrayerAlarmView';
+import AsmaUlHusnaView from './components/AsmaUlHusnaView';
+import CalendarView from './components/CalendarView';
+import ZakatCalculatorView from './components/ZakatCalculatorView';
+import LiveMakkahView from './components/LiveMakkahView';
 import { AppView } from './types';
-import { Menu, Volume2, X, Heart } from 'lucide-react';
+import { Menu, Volume2, X, Heart, Moon, Sun } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const DEFAULT_AZAN_URL = 'https://www.islamcan.com/audio/adhan/azan1.mp3';
@@ -21,7 +25,32 @@ export default function App() {
   const [activeView, setActiveView] = useState<AppView>('home');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAlarmPlaying, setIsAlarmPlaying] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      setTheme('dark');
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
 
   useEffect(() => {
     if (!audioRef.current) {
@@ -83,6 +112,14 @@ export default function App() {
         return <HidayatView />;
       case 'quiz':
         return <QuizView />;
+      case 'asma_ul_husna':
+        return <AsmaUlHusnaView />;
+      case 'calendar':
+        return <CalendarView />;
+      case 'zakat_calculator':
+        return <ZakatCalculatorView />;
+      case 'live_makkah':
+        return <LiveMakkahView />;
       case 'prayer_alarm':
         return <PrayerAlarmView isAlarmPlaying={isAlarmPlaying} stopAlarm={stopAlarm} />;
       case 'settings':
@@ -95,7 +132,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen bg-cream overflow-hidden">
+    <div className="flex h-screen bg-cream dark:bg-slate-900 overflow-hidden transition-colors duration-300">
       <AnimatePresence>
         {isAlarmPlaying && (
           <motion.div 
@@ -127,11 +164,13 @@ export default function App() {
         setActiveView={setActiveView} 
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
+        theme={theme}
+        toggleTheme={toggleTheme}
       />
       
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header for mobile */}
-        <header className="lg:hidden flex items-center justify-between p-4 bg-white border-b border-slate-100">
+        <header className="lg:hidden flex items-center justify-between p-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 transition-colors duration-300">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-islamic-green rounded-lg flex items-center justify-center overflow-hidden">
               <img 
@@ -157,14 +196,20 @@ export default function App() {
           <div className="flex items-center gap-2">
             <a 
               href={`upi://pay?pa=9719818918@ybl&pn=Amaan%20Siddiqui&cu=INR`}
-              className="flex items-center gap-1 px-3 py-1.5 bg-islamic-green/10 text-islamic-green rounded-full text-xs font-bold hover:bg-islamic-green/20 transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 bg-islamic-green/10 text-islamic-green dark:text-emerald-400 rounded-full text-xs font-bold hover:bg-islamic-green/20 transition-colors"
             >
               <Heart className="w-3 h-3 fill-current" />
               Donate
             </a>
             <button 
+              onClick={toggleTheme}
+              className="p-2 text-slate-500 hover:text-islamic-green dark:text-slate-400 dark:hover:text-emerald-400 transition-colors"
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+            <button 
               onClick={() => setIsSidebarOpen(true)}
-              className="p-2 text-slate-500 hover:text-islamic-green"
+              className="p-2 text-slate-500 hover:text-islamic-green dark:text-slate-400 dark:hover:text-emerald-400 transition-colors"
             >
               <Menu className="w-6 h-6" />
             </button>

@@ -79,10 +79,10 @@ export default function PrayerAlarmView({ isAlarmPlaying, stopAlarm }: PrayerAla
     <div className="max-w-4xl mx-auto h-full flex flex-col">
       <div className="flex items-center justify-between mb-12">
         <div>
-          <h2 className="text-4xl font-serif text-islamic-green flex items-center gap-3">
+          <h2 className="text-4xl font-serif text-islamic-green dark:text-emerald-400 flex items-center gap-3">
             Namaz Alarm <Bell className="w-8 h-8 text-islamic-gold" />
           </h2>
-          <p className="text-slate-500 italic">Set reminders for your daily prayers with Azan.</p>
+          <p className="text-slate-500 dark:text-slate-400 italic">Set reminders for your daily prayers with Azan.</p>
         </div>
         <button 
           onClick={() => setIsAdding(true)}
@@ -99,7 +99,7 @@ export default function PrayerAlarmView({ isAlarmPlaying, stopAlarm }: PrayerAla
           className="mb-8 bg-islamic-green text-white p-8 rounded-[2.5rem] flex flex-col md:flex-row items-center justify-between shadow-2xl border-4 border-white/20"
         >
           <div className="flex items-center gap-6 mb-4 md:mb-0">
-            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center animate-pulse">
+            <div className="w-16 h-16 bg-white dark:bg-slate-900/20 rounded-full flex items-center justify-center animate-pulse">
               <Volume2 className="w-8 h-8" />
             </div>
             <div>
@@ -109,7 +109,7 @@ export default function PrayerAlarmView({ isAlarmPlaying, stopAlarm }: PrayerAla
           </div>
           <button 
             onClick={stopAlarm}
-            className="w-full md:w-auto px-10 py-4 bg-white text-islamic-green rounded-2xl font-bold text-lg hover:bg-slate-50 transition-all shadow-lg active:scale-95"
+            className="w-full md:w-auto px-10 py-4 bg-white dark:bg-slate-900 text-islamic-green dark:text-emerald-400 rounded-2xl font-bold text-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-lg active:scale-95"
           >
             STOP ALARM
           </button>
@@ -123,9 +123,9 @@ export default function PrayerAlarmView({ isAlarmPlaying, stopAlarm }: PrayerAla
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white border-2 border-islamic-green/20 p-8 rounded-[2.5rem] shadow-xl space-y-6"
+              className="bg-white dark:bg-slate-900 border-2 border-islamic-green/20 p-8 rounded-[2.5rem] shadow-xl space-y-6"
             >
-              <h3 className="text-xl font-serif font-bold text-slate-800">New Prayer Alarm</h3>
+              <h3 className="text-xl font-serif font-bold text-slate-800 dark:text-slate-200">New Prayer Alarm</h3>
               <div className="space-y-4">
                 <div>
                   <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Prayer Name</label>
@@ -134,7 +134,7 @@ export default function PrayerAlarmView({ isAlarmPlaying, stopAlarm }: PrayerAla
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="e.g. Tahajjud"
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-islamic-green/20"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-islamic-green/20 dark:focus:ring-emerald-500/20"
                   />
                 </div>
                 <div>
@@ -143,7 +143,7 @@ export default function PrayerAlarmView({ isAlarmPlaying, stopAlarm }: PrayerAla
                     type="time" 
                     value={newTime}
                     onChange={(e) => setNewTime(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-islamic-green/20"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-islamic-green/20 dark:focus:ring-emerald-500/20"
                   />
                 </div>
               </div>
@@ -156,7 +156,7 @@ export default function PrayerAlarmView({ isAlarmPlaying, stopAlarm }: PrayerAla
                 </button>
                 <button 
                   onClick={() => setIsAdding(false)}
-                  className="px-6 py-3 bg-slate-100 text-slate-500 rounded-xl font-bold hover:bg-slate-200 transition-all"
+                  className="px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-xl font-bold hover:bg-slate-200 transition-all"
                 >
                   Cancel
                 </button>
@@ -170,20 +170,20 @@ export default function PrayerAlarmView({ isAlarmPlaying, stopAlarm }: PrayerAla
             layout
             key={alarm.id}
             className={cn(
-              "bg-white border p-8 rounded-[2.5rem] shadow-sm flex items-center justify-between group transition-all",
-              alarm.enabled ? "border-slate-100" : "border-slate-50 opacity-60"
+              "bg-white dark:bg-slate-900 border p-8 rounded-[2.5rem] shadow-sm flex items-center justify-between group transition-all",
+              alarm.enabled ? "border-slate-100 dark:border-slate-800" : "border-slate-50 opacity-60"
             )}
           >
             <div className="flex items-center gap-6">
               <div className={cn(
                 "w-16 h-16 rounded-3xl flex items-center justify-center transition-colors",
-                alarm.enabled ? "bg-islamic-green/10 text-islamic-green" : "bg-slate-100 text-slate-400"
+                alarm.enabled ? "bg-islamic-green/10 dark:bg-emerald-500/20 text-islamic-green dark:text-emerald-400" : "bg-slate-100 dark:bg-slate-800 text-slate-400"
               )}>
                 <Clock className="w-8 h-8" />
               </div>
               <div>
-                <h3 className="text-2xl font-serif font-bold text-slate-800">{alarm.time}</h3>
-                <p className="text-slate-500 font-medium">{alarm.name}</p>
+                <h3 className="text-2xl font-serif font-bold text-slate-800 dark:text-slate-200">{alarm.time}</h3>
+                <p className="text-slate-500 dark:text-slate-400 font-medium">{alarm.name}</p>
               </div>
             </div>
 
@@ -196,7 +196,7 @@ export default function PrayerAlarmView({ isAlarmPlaying, stopAlarm }: PrayerAla
                 )}
               >
                 <div className={cn(
-                  "absolute top-1 w-6 h-6 bg-white rounded-full transition-all shadow-sm",
+                  "absolute top-1 w-6 h-6 bg-white dark:bg-slate-900 rounded-full transition-all shadow-sm",
                   alarm.enabled ? "left-7" : "left-1"
                 )} />
               </button>

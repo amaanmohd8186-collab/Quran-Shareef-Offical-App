@@ -19,7 +19,6 @@ const TRANSLATIONS = [
   { id: 'en.sahih', name: 'English (Sahih International)' },
   { id: 'ur.jalandhry', name: 'Urdu (Jalandhry)' },
   { id: 'fr.hamidullah', name: 'French (Hamidullah)' },
-  { id: 'hi.farooq', name: 'Hindi (Farooq)' },
 ];
 
 export default function QuranView() {
@@ -46,6 +45,8 @@ export default function QuranView() {
   const [tafsirContent, setTafsirContent] = useState<string | null>(null);
   const [isTafsirLoading, setIsTafsirLoading] = useState(false);
   const [tafsirError, setTafsirError] = useState<string | null>(null);
+  const [tafsirLang, setTafsirLang] = useState<'en' | 'hi'>('hi');
+  const tafsirAbortController = useRef<AbortController | null>(null);
   
   // Audio State
   const [isPlaying, setIsPlaying] = useState(false);
@@ -181,7 +182,6 @@ export default function QuranView() {
   const prefetchTafsir = async (surahNum: number) => {
     try {
       const cacheKey = `quran_tafsir_surah_${surahNum}`;
-      const hindiCacheKey = `quran_tafsir_hindi_surah_${surahNum}`;
       
       const fetchEnglish = async () => {
         if (localStorage.getItem(cacheKey)) return;
@@ -203,42 +203,73 @@ export default function QuranView() {
     }
   };
 
-  const fetchTafsir = async (surahNum: number, ayahNum: number, text: string, translation: string) => {
+  const fetchTafsir = async (surahNum: number, ayahNum: number, text: string, translation: string, lang: 'en' | 'hi' = tafsirLang) => {
     setSelectedTafsir({ surahNum, ayahNum, text, translation });
+    setTafsirLang(lang);
     setTafsirContent(null);
     setTafsirError(null);
     setIsTafsirLoading(true);
     
+    if (tafsirAbortController.current) {
+      tafsirAbortController.current.abort();
+    }
+    tafsirAbortController.current = new AbortController();
+    
     try {
-      const cacheKey = `quran_tafsir_surah_${surahNum}`;
-      const cached = localStorage.getItem(cacheKey);
-      
-      let hasEnglish = false;
-      let englishText = '';
+      if (lang === 'en') {
+        const cacheKey = `quran_tafsir_surah_${surahNum}`;
+        const cached = localStorage.getItem(cacheKey);
+        
+        let hasEnglish = false;
+        let englishText = '';
 
-      if (cached) {
-        const tafsirMap = JSON.parse(cached);
-        if (tafsirMap[ayahNum]) {
-          englishText = tafsirMap[ayahNum];
+        if (cached) {
+          const tafsirMap = JSON.parse(cached);
+          if (tafsirMap[ayahNum]) {
+            englishText = tafsirMap[ayahNum];
+            setTafsirContent(englishText);
+            hasEnglish = true;
+          }
+        }
+
+        if (!hasEnglish) {
+          const res = await fetch(`https://api.quran.com/api/v4/tafsirs/169/by_ayah/${surahNum}:${ayahNum}`);
+          const data = await res.json();
+          englishText = data.tafsir.text;
           setTafsirContent(englishText);
-          hasEnglish = true;
+          const map = cached ? JSON.parse(cached) : {};
+          map[ayahNum] = englishText;
+          localStorage.setItem(cacheKey, JSON.stringify(map));
+        }
+        setIsTafsirLoading(false);
+      } else {
+        // Hindi Tafsir using Gemini Streaming
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        const prompt = `Provide a short, easy-to-understand Tafsir (explanation) in Hindi for Surah ${surahNum}, Ayah ${ayahNum} of the Quran.
+        
+Arabic: ${text}
+Translation: ${translation}
+
+Format the response in clean HTML using <p>, <strong>, and <ul> tags. Do not use markdown backticks. Make it very fast and concise.`;
+
+        const responseStream = await ai.models.generateContentStream({
+          model: "gemini-3-flash-preview",
+          contents: prompt,
+        });
+
+        let fullText = '';
+        setIsTafsirLoading(false); // Stop loading spinner as soon as stream starts
+        for await (const chunk of responseStream) {
+          if (tafsirAbortController.current?.signal.aborted) break;
+          fullText += chunk.text;
+          setTafsirContent(fullText);
         }
       }
-
-      if (!hasEnglish) {
-        const res = await fetch(`https://api.quran.com/api/v4/tafsirs/169/by_ayah/${surahNum}:${ayahNum}`);
-        const data = await res.json();
-        englishText = data.tafsir.text;
-        setTafsirContent(englishText);
-        const map = cached ? JSON.parse(cached) : {};
-        map[ayahNum] = englishText;
-        localStorage.setItem(cacheKey, JSON.stringify(map));
+    } catch (err: any) {
+      if (err.name !== 'AbortError') {
+        setTafsirError("Could not load Tafsir. Please try again later.");
+        setIsTafsirLoading(false);
       }
-      
-    } catch (err) {
-      setTafsirError("Could not load Tafsir. Please try again later.");
-    } finally {
-      setIsTafsirLoading(false);
     }
   };
 
@@ -592,8 +623,8 @@ export default function QuranView() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-full space-y-4">
-        <Loader2 className="w-12 h-12 text-islamic-green animate-spin" />
-        <p className="text-serif italic text-slate-500">Loading the Holy Quran...</p>
+        <Loader2 className="w-12 h-12 text-islamic-green dark:text-emerald-400 animate-spin" />
+        <p className="text-serif italic text-slate-500 dark:text-slate-400">Loading the Holy Quran...</p>
       </div>
     );
   }
@@ -611,15 +642,15 @@ export default function QuranView() {
           >
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <h2 className="text-4xl font-serif text-islamic-green">The Holy Quran</h2>
-                <p className="text-slate-500 italic">Read, reflect, and find peace.</p>
+                <h2 className="text-4xl font-serif text-islamic-green dark:text-emerald-400">The Holy Quran</h2>
+                <p className="text-slate-500 dark:text-slate-400 italic">Read, reflect, and find peace.</p>
               </div>
               
               <div className="flex items-center gap-4 flex-wrap">
                 <div className="relative">
                   <button 
                     onClick={() => setShowTranslationMenu(!showTranslationMenu)}
-                    className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-100 rounded-full text-sm font-medium text-slate-600 hover:text-islamic-green transition-all shadow-sm"
+                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-islamic-green dark:hover:text-emerald-400 transition-all shadow-sm"
                   >
                     <Languages className="w-4 h-4" />
                     <span className="max-w-[120px] truncate">
@@ -633,7 +664,7 @@ export default function QuranView() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
-                        className="absolute top-full mt-2 left-0 w-64 bg-white border border-slate-100 rounded-2xl shadow-xl z-50 py-2"
+                        className="absolute top-full mt-2 left-0 w-64 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-xl z-50 py-2"
                       >
                         {TRANSLATIONS.map(translation => (
                           <button
@@ -644,7 +675,7 @@ export default function QuranView() {
                             }}
                             className={cn(
                               "w-full text-left px-4 py-2 text-sm transition-colors",
-                              selectedTranslation === translation.id ? "bg-islamic-green/10 text-islamic-green font-bold" : "text-slate-600 hover:bg-slate-50"
+                              selectedTranslation === translation.id ? "bg-islamic-green/10 dark:bg-emerald-500/20 text-islamic-green dark:text-emerald-400 font-bold" : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
                             )}
                           >
                             {translation.name}
@@ -658,7 +689,7 @@ export default function QuranView() {
                 <div className="relative">
                   <button 
                     onClick={() => setShowReciterMenu(!showReciterMenu)}
-                    className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-100 rounded-full text-sm font-medium text-slate-600 hover:text-islamic-green transition-all shadow-sm"
+                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-islamic-green dark:hover:text-emerald-400 transition-all shadow-sm"
                   >
                     <UserCircle className="w-4 h-4" />
                     <span className="max-w-[120px] truncate">
@@ -672,7 +703,7 @@ export default function QuranView() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
-                        className="absolute top-full mt-2 left-0 w-64 bg-white border border-slate-100 rounded-2xl shadow-xl z-50 py-2"
+                        className="absolute top-full mt-2 left-0 w-64 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-xl z-50 py-2"
                       >
                         {RECITERS.map(reciter => (
                           <button
@@ -683,7 +714,7 @@ export default function QuranView() {
                             }}
                             className={cn(
                               "w-full text-left px-4 py-2 text-sm transition-colors",
-                              selectedReciter === reciter.id ? "bg-islamic-green/10 text-islamic-green font-bold" : "text-slate-600 hover:bg-slate-50"
+                              selectedReciter === reciter.id ? "bg-islamic-green/10 dark:bg-emerald-500/20 text-islamic-green dark:text-emerald-400 font-bold" : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
                             )}
                           >
                             {reciter.name}
@@ -694,12 +725,12 @@ export default function QuranView() {
                   </AnimatePresence>
                 </div>
 
-                <div className="flex bg-white border border-slate-100 rounded-full p-1 shadow-sm">
+                <div className="flex bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-full p-1 shadow-sm">
                   <button 
                     onClick={() => setViewMode('surah')}
                     className={cn(
                       "px-6 py-1.5 rounded-full text-sm font-medium transition-all",
-                      viewMode === 'surah' ? "bg-islamic-green text-white shadow-sm" : "text-slate-500 hover:text-islamic-green"
+                      viewMode === 'surah' ? "bg-islamic-green text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-islamic-green dark:hover:text-emerald-400"
                     )}
                   >
                     Surah
@@ -708,7 +739,7 @@ export default function QuranView() {
                     onClick={() => setViewMode('juz')}
                     className={cn(
                       "px-6 py-1.5 rounded-full text-sm font-medium transition-all",
-                      viewMode === 'juz' ? "bg-islamic-green text-white shadow-sm" : "text-slate-500 hover:text-islamic-green"
+                      viewMode === 'juz' ? "bg-islamic-green text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-islamic-green dark:hover:text-emerald-400"
                     )}
                   >
                     Juz
@@ -717,7 +748,7 @@ export default function QuranView() {
 
                 <button 
                   onClick={() => setShowBookmarks(true)}
-                  className="flex items-center gap-2 px-6 py-2 bg-white border border-slate-100 rounded-full text-sm font-medium text-slate-600 hover:text-rose-500 transition-all shadow-sm relative group"
+                  className="flex items-center gap-2 px-6 py-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-rose-500 transition-all shadow-sm relative group"
                 >
                   <Heart className={cn("w-4 h-4", bookmarks.length > 0 && "fill-rose-500 text-rose-500")} />
                   <span>Bookmarks</span>
@@ -742,13 +773,13 @@ export default function QuranView() {
                 )}
 
                 <div className="relative group">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-islamic-green transition-colors" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-islamic-green dark:text-emerald-400 transition-colors" />
                   <input 
                     type="text" 
                     placeholder={viewMode === 'surah' ? "Search Surah..." : "Search Juz..."}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-islamic-green/20 focus:border-islamic-green transition-all w-full md:w-64"
+                    className="pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-islamic-green/20 dark:focus:ring-emerald-500/20 focus:border-islamic-green dark:focus:border-emerald-500 transition-all w-full md:w-64"
                   />
                 </div>
               </div>
@@ -763,17 +794,17 @@ export default function QuranView() {
                     onKeyDown={(e) => e.key === 'Enter' && fetchSurahDetail(surah.number)}
                     role="button"
                     tabIndex={0}
-                    className="group flex items-center p-4 bg-white border border-slate-100 rounded-2xl hover:border-islamic-green/30 hover:shadow-lg hover:shadow-islamic-green/5 transition-all text-left cursor-pointer outline-none focus:ring-2 focus:ring-islamic-green/20"
+                    className="group flex items-center p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl hover:border-islamic-green/30 dark:hover:border-emerald-500/30 hover:shadow-lg hover:shadow-islamic-green/5 dark:hover:shadow-emerald-500/5 transition-all text-left cursor-pointer outline-none focus:ring-2 focus:ring-islamic-green/20 dark:focus:ring-emerald-500/20"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-islamic-green/5 flex items-center justify-center text-islamic-green font-serif font-bold group-hover:bg-islamic-green group-hover:text-white transition-colors">
+                    <div className="w-10 h-10 rounded-xl bg-islamic-green/5 dark:bg-emerald-500/10 flex items-center justify-center text-islamic-green dark:text-emerald-400 font-serif font-bold group-hover:bg-islamic-green group-hover:text-white transition-colors">
                       {surah.number}
                     </div>
                     <div className="ml-4 flex-1">
-                      <h3 className="font-semibold text-slate-800">{surah.englishName}</h3>
-                      <p className="text-xs text-slate-500 uppercase tracking-wider">{surah.englishNameTranslation}</p>
+                      <h3 className="font-semibold text-slate-800 dark:text-slate-200">{surah.englishName}</h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{surah.englishNameTranslation}</p>
                     </div>
                     <div className="text-right flex flex-col items-end gap-2">
-                      <p className="arabic-text text-xl text-islamic-green">{surah.name}</p>
+                      <p className="arabic-text text-xl text-islamic-green dark:text-emerald-400">{surah.name}</p>
                       <div className="flex items-center gap-2">
                         <p className="text-[10px] text-slate-400 uppercase">{surah.numberOfAyahs} Ayahs</p>
                         <button 
@@ -820,8 +851,8 @@ export default function QuranView() {
                             className={cn(
                               "p-1 rounded-md transition-all",
                               downloadingSurahs[surah.number] 
-                                ? "bg-islamic-green/10 text-islamic-green animate-pulse" 
-                                : "hover:bg-islamic-green/10 text-slate-300 hover:text-islamic-green"
+                                ? "bg-islamic-green/10 dark:bg-emerald-500/20 text-islamic-green dark:text-emerald-400 animate-pulse" 
+                                : "hover:bg-islamic-green/10 dark:bg-emerald-500/20 text-slate-300 hover:text-islamic-green dark:hover:text-emerald-400"
                             )}
                             title="Download for offline"
                             disabled={downloadingSurahs[surah.number]}
@@ -847,17 +878,17 @@ export default function QuranView() {
                       onKeyDown={(e) => e.key === 'Enter' && fetchJuzDetail(juz)}
                       role="button"
                       tabIndex={0}
-                      className="group flex items-center p-4 bg-white border border-slate-100 rounded-2xl hover:border-islamic-green/30 hover:shadow-lg hover:shadow-islamic-green/5 transition-all text-left cursor-pointer outline-none focus:ring-2 focus:ring-islamic-green/20"
+                      className="group flex items-center p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl hover:border-islamic-green/30 dark:hover:border-emerald-500/30 hover:shadow-lg hover:shadow-islamic-green/5 dark:hover:shadow-emerald-500/5 transition-all text-left cursor-pointer outline-none focus:ring-2 focus:ring-islamic-green/20 dark:focus:ring-emerald-500/20"
                     >
-                      <div className="w-10 h-10 rounded-xl bg-islamic-green/5 flex items-center justify-center text-islamic-green font-serif font-bold group-hover:bg-islamic-green group-hover:text-white transition-colors">
+                      <div className="w-10 h-10 rounded-xl bg-islamic-green/5 dark:bg-emerald-500/10 flex items-center justify-center text-islamic-green dark:text-emerald-400 font-serif font-bold group-hover:bg-islamic-green group-hover:text-white transition-colors">
                         {juz}
                       </div>
                       <div className="ml-4 flex-1">
-                        <h3 className="font-semibold text-slate-800">Juz {juz}</h3>
-                        <p className="text-xs text-slate-500 uppercase tracking-wider">Para {juz}</p>
+                        <h3 className="font-semibold text-slate-800 dark:text-slate-200">Juz {juz}</h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Para {juz}</p>
                       </div>
                       <div className="text-right">
-                        <p className="arabic-text text-xl text-islamic-green">الجزء {juz}</p>
+                        <p className="arabic-text text-xl text-islamic-green dark:text-emerald-400">الجزء {juz}</p>
                       </div>
                     </div>
                   ))
@@ -880,13 +911,13 @@ export default function QuranView() {
                     if (audioRef.current) audioRef.current.pause();
                     setIsPlaying(false);
                   }}
-                  className="p-2 hover:bg-islamic-green/5 rounded-full text-islamic-green transition-colors"
+                  className="p-2 hover:bg-islamic-green/5 dark:bg-emerald-500/10 rounded-full text-islamic-green dark:text-emerald-400 transition-colors"
                 >
                   <ChevronRight className="w-6 h-6 rotate-180" />
                 </button>
                 <div>
                   <div className="flex items-center gap-3">
-                    <h2 className="text-3xl font-serif text-islamic-green">{selectedSurah.englishName}</h2>
+                    <h2 className="text-3xl font-serif text-islamic-green dark:text-emerald-400">{selectedSurah.englishName}</h2>
                     {cachedSurahs.includes(selectedSurah.number) ? (
                       <button 
                         onClick={() => removeCachedSurah(selectedSurah.number)}
@@ -901,8 +932,8 @@ export default function QuranView() {
                         className={cn(
                           "p-2 rounded-full transition-all",
                           downloadingSurahs[selectedSurah.number]
-                            ? "bg-islamic-green/10 text-islamic-green animate-pulse"
-                            : "bg-slate-50 text-slate-400 hover:bg-islamic-green/10 hover:text-islamic-green"
+                            ? "bg-islamic-green/10 dark:bg-emerald-500/20 text-islamic-green dark:text-emerald-400 animate-pulse"
+                            : "bg-slate-50 dark:bg-slate-800 text-slate-400 hover:bg-islamic-green/10 dark:bg-emerald-500/20 hover:text-islamic-green dark:hover:text-emerald-400"
                         )}
                         title="Download for offline"
                         disabled={downloadingSurahs[selectedSurah.number]}
@@ -915,7 +946,7 @@ export default function QuranView() {
                       </button>
                     )}
                   </div>
-                  <p className="text-slate-500 italic">{selectedSurah.englishNameTranslation} • {selectedSurah.revelationType}</p>
+                  <p className="text-slate-500 dark:text-slate-400 italic">{selectedSurah.englishNameTranslation} • {selectedSurah.revelationType}</p>
                 </div>
               </div>
 
@@ -953,9 +984,9 @@ export default function QuranView() {
               </motion.div>
             )}
 
-            <div className="bg-white border border-slate-100 rounded-3xl p-8 flex flex-col items-center space-y-8 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-8 flex flex-col items-center space-y-8 shadow-sm">
               {selectedSurah.number !== 1 && selectedSurah.number !== 9 && (
-                <p className="arabic-text text-4xl text-islamic-green mb-8">
+                <p className="arabic-text text-4xl text-islamic-green dark:text-emerald-400 mb-8">
                   بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
                 </p>
               )}
@@ -968,14 +999,14 @@ export default function QuranView() {
                     onClick={() => playAyahAudio(ayah.number, ayah.numberInSurah, ayah.surah?.number || selectedSurah.number)}
                     className={cn(
                       "flex flex-col space-y-6 pb-8 border-bottom border-slate-50 last:border-0 transition-all rounded-2xl p-4 cursor-pointer hover:bg-islamic-green/[0.02]",
-                      activeAyahNumber === ayah.number ? "bg-islamic-green/5 ring-1 ring-islamic-green/10 shadow-sm" : ""
+                      activeAyahNumber === ayah.number ? "bg-islamic-green/5 dark:bg-emerald-500/10 ring-1 ring-islamic-green/10 shadow-sm" : ""
                     )}
                   >
                     <div className="flex justify-between items-start gap-8">
                       <div className="flex flex-col items-center gap-4 shrink-0 mt-2">
                         <div className={cn(
                           "w-8 h-8 rounded-full border flex items-center justify-center text-[10px] font-bold transition-colors",
-                          activeAyahNumber === ayah.number ? "bg-islamic-green text-white border-islamic-green" : "border-islamic-green/20 text-islamic-green"
+                          activeAyahNumber === ayah.number ? "bg-islamic-green text-white border-islamic-green" : "border-islamic-green/20 text-islamic-green dark:text-emerald-400"
                         )}>
                           {ayah.numberInSurah}
                         </div>
@@ -989,7 +1020,7 @@ export default function QuranView() {
                             "p-2 rounded-xl transition-all",
                             activeAyahNumber === ayah.number 
                               ? "bg-islamic-gold text-white" 
-                              : "bg-islamic-green/5 text-islamic-green hover:bg-islamic-green hover:text-white",
+                              : "bg-islamic-green/5 dark:bg-emerald-500/10 text-islamic-green dark:text-emerald-400 hover:bg-islamic-green hover:text-white",
                             isAudioLoading && activeAyahNumber === ayah.number && "opacity-70 cursor-not-allowed"
                           )}
                           title="Play Audio"
@@ -1005,7 +1036,7 @@ export default function QuranView() {
                             e.stopPropagation();
                             fetchTafsir(selectedSurah.number, ayah.numberInSurah, ayah.text, ayah.translation);
                           }}
-                          className="p-2 rounded-xl transition-all bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                          className="p-2 rounded-xl transition-all bg-slate-50 dark:bg-slate-800 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:text-slate-400"
                           title="Read Tafsir"
                         >
                           <FileText className="w-4 h-4" />
@@ -1027,18 +1058,18 @@ export default function QuranView() {
                             "p-2 rounded-xl transition-all",
                             bookmarks.find(b => b.id === `ayah:${selectedSurah.number}:${ayah.numberInSurah}`)
                               ? "bg-rose-50 text-rose-500"
-                              : "bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-500"
+                              : "bg-slate-50 dark:bg-slate-800 text-slate-400 hover:bg-rose-50 hover:text-rose-500"
                           )}
                           title="Bookmark Ayah"
                         >
                           <Bookmark className={cn("w-4 h-4", bookmarks.find(b => b.id === `ayah:${selectedSurah.number}:${ayah.numberInSurah}`) && "fill-current")} />
                         </button>
                       </div>
-                      <p className="arabic-text text-3xl text-right leading-[2.5] text-slate-800 flex-1">
+                      <p className="arabic-text text-3xl text-right leading-[2.5] text-slate-800 dark:text-slate-200 flex-1">
                         {ayah.text}
                       </p>
                     </div>
-                    <p className="text-slate-600 leading-relaxed pl-16 italic">
+                    <p className="text-slate-600 dark:text-slate-400 leading-relaxed pl-16 italic">
                       {ayah.translation}
                     </p>
                   </div>
@@ -1050,10 +1081,10 @@ export default function QuranView() {
       </AnimatePresence>
 
       {loadingDetail && (
-        <div className="fixed inset-0 bg-cream/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-cream/80 dark:bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="flex flex-col items-center space-y-4">
-            <Loader2 className="w-12 h-12 text-islamic-green animate-spin" />
-            <p className="text-serif italic text-slate-600">Opening the Surah...</p>
+            <Loader2 className="w-12 h-12 text-islamic-green dark:text-emerald-400 animate-spin" />
+            <p className="text-serif italic text-slate-600 dark:text-slate-400">Opening the Surah...</p>
           </div>
         </div>
       )}
@@ -1072,16 +1103,16 @@ export default function QuranView() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white w-full max-w-2xl max-h-[85vh] rounded-3xl shadow-xl flex flex-col overflow-hidden"
+              className="bg-white dark:bg-slate-900 w-full max-w-2xl max-h-[85vh] rounded-3xl shadow-xl flex flex-col overflow-hidden"
             >
-              <div className="flex items-center justify-between p-6 border-b border-slate-100">
+              <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center text-rose-500">
                     <Heart className="w-5 h-5 fill-current" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-slate-800">My Bookmarks</h3>
-                    <p className="text-sm text-slate-500">{bookmarks.length} saved items</p>
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">My Bookmarks</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{bookmarks.length} saved items</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -1101,20 +1132,20 @@ export default function QuranView() {
                   )}
                   <button
                     onClick={() => setShowBookmarks(false)}
-                    className="p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-full transition-colors"
+                    className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:text-slate-400 rounded-full transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
               </div>
               
-              <div className="p-6 overflow-y-auto flex-1 bg-slate-50/50">
+              <div className="p-6 overflow-y-auto flex-1 bg-slate-50 dark:bg-slate-800/50">
                 {bookmarks.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-300 mb-4">
+                    <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-300 mb-4">
                       <Bookmark className="w-8 h-8" />
                     </div>
-                    <h4 className="text-lg font-semibold text-slate-600">No bookmarks yet</h4>
+                    <h4 className="text-lg font-semibold text-slate-600 dark:text-slate-400">No bookmarks yet</h4>
                     <p className="text-slate-400 max-w-xs mx-auto mt-2">
                       Click the heart or bookmark icon on any Surah or Ayah to save it here for quick access.
                     </p>
@@ -1124,17 +1155,17 @@ export default function QuranView() {
                     {bookmarks.sort((a, b) => b.timestamp - a.timestamp).map((bookmark) => (
                       <div 
                         key={bookmark.id}
-                        className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all group"
+                        className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group"
                       >
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex items-center gap-2">
                             <span className={cn(
                               "text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full",
-                              bookmark.type === 'surah' ? "bg-islamic-green/10 text-islamic-green" : "bg-islamic-gold/10 text-islamic-gold"
+                              bookmark.type === 'surah' ? "bg-islamic-green/10 dark:bg-emerald-500/20 text-islamic-green dark:text-emerald-400" : "bg-islamic-gold/10 text-islamic-gold"
                             )}>
                               {bookmark.type}
                             </span>
-                            <h4 className="font-bold text-slate-800">
+                            <h4 className="font-bold text-slate-800 dark:text-slate-200">
                               {bookmark.type === 'surah' ? bookmark.surahName : `Surah ${bookmark.surahName}, Ayah ${bookmark.ayahNumber}`}
                             </h4>
                           </div>
@@ -1148,8 +1179,8 @@ export default function QuranView() {
                         
                         {bookmark.type === 'ayah' && (
                           <div className="space-y-2 mb-4">
-                            <p className="arabic-text text-xl text-right text-slate-800">{bookmark.text}</p>
-                            <p className="text-sm text-slate-500 italic line-clamp-2">{bookmark.translation}</p>
+                            <p className="arabic-text text-xl text-right text-slate-800 dark:text-slate-200">{bookmark.text}</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 italic line-clamp-2">{bookmark.translation}</p>
                           </div>
                         )}
                         
@@ -1162,7 +1193,7 @@ export default function QuranView() {
                             }
                             setShowBookmarks(false);
                           }}
-                          className="w-full py-2 bg-slate-50 text-slate-600 rounded-xl text-sm font-medium hover:bg-islamic-green hover:text-white transition-all flex items-center justify-center gap-2"
+                          className="w-full py-2 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl text-sm font-medium hover:bg-islamic-green hover:text-white transition-all flex items-center justify-center gap-2"
                         >
                           <BookOpen className="w-4 h-4" />
                           Open {bookmark.type === 'surah' ? 'Surah' : 'Ayah'}
@@ -1191,36 +1222,55 @@ export default function QuranView() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white w-full max-w-3xl max-h-[85vh] rounded-3xl shadow-xl flex flex-col overflow-hidden"
+              className="bg-white dark:bg-slate-900 w-full max-w-3xl max-h-[85vh] rounded-3xl shadow-xl flex flex-col overflow-hidden"
             >
-              <div className="flex items-center justify-between p-6 border-b border-slate-100">
+              <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
                 <div>
-                  <h3 className="text-xl font-bold text-slate-800">Tafsir / Meaning</h3>
-                  <p className="text-sm text-slate-500">Surah {selectedSurah?.englishName} • Ayah {selectedTafsir.ayahNum}</p>
+                  <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">Tafsir / Meaning</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Surah {selectedSurah?.englishName} • Ayah {selectedTafsir.ayahNum}</p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 mr-2">
+                    <button
+                      onClick={() => fetchTafsir(selectedTafsir.surahNum, selectedTafsir.ayahNum, selectedTafsir.text, selectedTafsir.translation, 'hi')}
+                      className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${tafsirLang === 'hi' ? 'bg-white dark:bg-slate-900 text-islamic-green dark:text-emerald-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'}`}
+                    >
+                      Hindi
+                    </button>
+                    <button
+                      onClick={() => fetchTafsir(selectedTafsir.surahNum, selectedTafsir.ayahNum, selectedTafsir.text, selectedTafsir.translation, 'en')}
+                      className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${tafsirLang === 'en' ? 'bg-white dark:bg-slate-900 text-islamic-green dark:text-emerald-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'}`}
+                    >
+                      English
+                    </button>
+                  </div>
                   <button
-                    onClick={() => setSelectedTafsir(null)}
-                    className="p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-full transition-colors"
+                    onClick={() => {
+                      setSelectedTafsir(null);
+                      if (tafsirAbortController.current) {
+                        tafsirAbortController.current.abort();
+                      }
+                    }}
+                    className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:text-slate-400 rounded-full transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
               </div>
               
-              <div className="p-6 overflow-y-auto flex-1 bg-slate-50/50">
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-6">
-                  <p className="arabic-text text-3xl text-right leading-[2.5] text-slate-800 mb-6">
+              <div className="p-6 overflow-y-auto flex-1 bg-slate-50 dark:bg-slate-800/50">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 mb-6">
+                  <p className="arabic-text text-3xl text-right leading-[2.5] text-slate-800 dark:text-slate-200 mb-6">
                     {selectedTafsir.text}
                   </p>
-                  <p className="text-slate-600 leading-relaxed italic">
+                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed italic">
                     {selectedTafsir.translation}
                   </p>
                 </div>
 
                 {isTafsirLoading ? (
                   <div className="flex flex-col items-center justify-center py-12 text-slate-400">
-                    <Loader2 className="w-8 h-8 animate-spin mb-4 text-islamic-green" />
+                    <Loader2 className="w-8 h-8 animate-spin mb-4 text-islamic-green dark:text-emerald-400" />
                     <p>Loading Tafsir...</p>
                   </div>
                 ) : tafsirError ? (
@@ -1229,7 +1279,7 @@ export default function QuranView() {
                   </div>
                 ) : tafsirContent ? (
                   <div 
-                    className="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-slate-800 prose-p:text-slate-600 prose-p:leading-relaxed prose-a:text-islamic-green"
+                    className="prose prose-slate max-w-none prose-headings:font-bold prose-headings:text-slate-800 dark:text-slate-200 prose-p:text-slate-600 dark:text-slate-400 prose-p:leading-relaxed prose-a:text-islamic-green dark:text-emerald-400"
                     dangerouslySetInnerHTML={{ __html: tafsirContent }}
                   />
                 ) : null}

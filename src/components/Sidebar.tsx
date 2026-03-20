@@ -1,5 +1,5 @@
 import React from 'react';
-import { Book, MessageSquare, BrainCircuit, Settings, Moon, Sun, Menu, X, Heart, Compass, Sparkles, Fingerprint, Home, Bell } from 'lucide-react';
+import { Book, MessageSquare, BrainCircuit, Settings, Moon, Sun, Menu, X, Heart, Compass, Sparkles, Fingerprint, Home, Bell, Calendar as CalendarIcon, Calculator, Video } from 'lucide-react';
 import { AppView } from '../types';
 import { cn } from '../lib/utils';
 
@@ -8,6 +8,8 @@ interface SidebarProps {
   setActiveView: (view: AppView) => void;
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
 }
 
 const DAILY_VERSES = [
@@ -20,7 +22,7 @@ const DAILY_VERSES = [
   { text: "And put your trust in Allah, and enough is Allah as a disposer of affairs.", ref: "33:3" }
 ];
 
-export default function Sidebar({ activeView, setActiveView, isOpen, setIsOpen }: SidebarProps) {
+export default function Sidebar({ activeView, setActiveView, isOpen, setIsOpen, theme, toggleTheme }: SidebarProps) {
   const today = new Date().toDateString();
   const verseIndex = Math.abs(today.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % DAILY_VERSES.length;
   const dailyVerse = DAILY_VERSES[verseIndex];
@@ -31,6 +33,10 @@ export default function Sidebar({ activeView, setActiveView, isOpen, setIsOpen }
     { id: 'assistant', label: 'Quran AI', icon: MessageSquare },
     { id: 'hadith', label: 'Hadith', icon: MessageSquare },
     { id: 'dua', label: 'Duas', icon: Heart },
+    { id: 'asma_ul_husna', label: '99 Names', icon: Sparkles },
+    { id: 'calendar', label: 'Islamic Calendar', icon: CalendarIcon },
+  { id: 'zakat_calculator', label: 'Zakat Calculator', icon: Calculator },
+  { id: 'live_makkah', label: 'Live Makkah', icon: Video },
     { id: 'prayer_alarm', label: 'Prayer Alarm', icon: Bell },
     { id: 'tasbeeh', label: 'Tasbeeh', icon: Fingerprint },
     { id: 'hidayat', label: 'Hidayat', icon: Sparkles },
@@ -49,7 +55,7 @@ export default function Sidebar({ activeView, setActiveView, isOpen, setIsOpen }
       )}
 
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-100 flex flex-col transition-transform duration-300 ease-in-out lg:static lg:translate-x-0",
+        "fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 flex flex-col transition-all duration-300 ease-in-out lg:static lg:translate-x-0",
         !isOpen && "-translate-x-full"
       )}>
         <div className="p-8 flex items-center gap-3">
@@ -71,16 +77,16 @@ export default function Sidebar({ activeView, setActiveView, isOpen, setIsOpen }
               }}
             />
           </div>
-          <h1 className="text-2xl font-serif font-bold text-islamic-green tracking-tight">Quran Shareef</h1>
+          <h1 className="text-2xl font-serif font-bold text-islamic-green dark:text-emerald-400 tracking-tight transition-colors">Quran Shareef</h1>
           <button 
-            className="lg:hidden ml-auto p-2 text-slate-400 hover:text-islamic-green"
+            className="lg:hidden ml-auto p-2 text-slate-400 hover:text-islamic-green dark:hover:text-emerald-400 transition-colors"
             onClick={() => setIsOpen(false)}
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
-        <nav className="flex-1 px-4 py-4 space-y-2">
+        <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
           {menuItems.map((item) => (
             <button
               key={item.id}
@@ -91,23 +97,32 @@ export default function Sidebar({ activeView, setActiveView, isOpen, setIsOpen }
               className={cn(
                 "w-full flex items-center gap-4 px-4 py-3 rounded-2xl transition-all group",
                 activeView === item.id 
-                  ? "bg-islamic-green text-white shadow-md shadow-islamic-green/10" 
-                  : "text-slate-500 hover:bg-islamic-green/5 hover:text-islamic-green"
+                  ? "bg-islamic-green dark:bg-emerald-500/20 text-white dark:text-emerald-400 shadow-md shadow-islamic-green/10 dark:shadow-none" 
+                  : "text-slate-500 dark:text-slate-400 hover:bg-islamic-green/5 dark:hover:bg-slate-800 hover:text-islamic-green dark:hover:text-emerald-400"
               )}
             >
               <item.icon className={cn(
                 "w-5 h-5 transition-colors",
-                activeView === item.id ? "text-white" : "text-slate-400 group-hover:text-islamic-green"
+                activeView === item.id ? "text-white dark:text-emerald-400" : "text-slate-400 group-hover:text-islamic-green dark:group-hover:text-emerald-400"
               )} />
               <span className="font-medium">{item.label}</span>
             </button>
           ))}
         </nav>
 
-        <div className="p-6 mt-auto border-t border-slate-50">
-          <div className="bg-islamic-green/5 rounded-2xl p-4">
-            <p className="text-xs text-islamic-green font-serif italic mb-1">Daily Verse</p>
-            <p className="text-[10px] text-slate-600 leading-relaxed">
+        <div className="p-6 mt-auto border-t border-slate-50 dark:border-slate-800 transition-colors">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Theme</span>
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-islamic-green dark:hover:text-emerald-400 transition-colors"
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+          </div>
+          <div className="bg-islamic-green/5 dark:bg-emerald-500/10 rounded-2xl p-4 transition-colors">
+            <p className="text-xs text-islamic-green dark:text-emerald-400 font-serif italic mb-1">Daily Verse</p>
+            <p className="text-[10px] text-slate-600 dark:text-slate-400 leading-relaxed">
               "{dailyVerse.text}" ({dailyVerse.ref})
             </p>
           </div>

@@ -37,10 +37,10 @@ export default function HidayatView() {
   return (
     <div className="max-w-5xl mx-auto h-full flex flex-col">
       <div className="mb-12">
-        <h2 className="text-4xl font-serif text-islamic-green flex items-center gap-3">
+        <h2 className="text-4xl font-serif text-islamic-green dark:text-emerald-400 flex items-center gap-3">
           Hidayat (Guidance) <Sparkles className="w-6 h-6 text-islamic-gold" />
         </h2>
-        <p className="text-slate-500 italic">Daily reminders and spiritual guidance for a meaningful life.</p>
+        <p className="text-slate-500 dark:text-slate-400 italic">Daily reminders and spiritual guidance for a meaningful life.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -50,14 +50,14 @@ export default function HidayatView() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.1 }}
-            className="bg-white border border-slate-100 p-8 rounded-[2.5rem] shadow-sm hover:shadow-md transition-all flex gap-6"
+            className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-8 rounded-[2.5rem] shadow-sm hover:shadow-md transition-all flex gap-6"
           >
             <div className={`w-16 h-16 shrink-0 rounded-3xl ${item.bg} ${item.color} flex items-center justify-center`}>
               <item.icon className="w-8 h-8" />
             </div>
             <div className="space-y-3 flex-1">
-              <h3 className="text-xl font-serif font-bold text-slate-800">{item.title}</h3>
-              <p className="text-slate-600 leading-relaxed italic">
+              <h3 className="text-xl font-serif font-bold text-slate-800 dark:text-slate-200">{item.title}</h3>
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed italic">
                 "{item.text}"
               </p>
             </div>

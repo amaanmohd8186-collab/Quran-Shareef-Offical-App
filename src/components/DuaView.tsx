@@ -118,18 +118,18 @@ export default function DuaView() {
     <div className="max-w-6xl mx-auto h-full flex flex-col">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div>
-          <h2 className="text-4xl font-serif text-islamic-green">Supplications (Duas)</h2>
-          <p className="text-slate-500 italic">Connect with your Creator through beautiful prayers.</p>
+          <h2 className="text-4xl font-serif text-islamic-green dark:text-emerald-400">Supplications (Duas)</h2>
+          <p className="text-slate-500 dark:text-slate-400 italic">Connect with your Creator through beautiful prayers.</p>
         </div>
 
         <div className="relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-islamic-green transition-colors" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-islamic-green dark:text-emerald-400 transition-colors" />
           <input 
             type="text" 
             placeholder="Search Duas..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 pr-6 py-3 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-islamic-green/5 focus:border-islamic-green transition-all w-full md:w-72 shadow-sm"
+            className="pl-12 pr-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-4 focus:ring-islamic-green/5 focus:border-islamic-green dark:focus:border-emerald-500 transition-all w-full md:w-72 shadow-sm"
           />
         </div>
       </div>
@@ -143,7 +143,7 @@ export default function DuaView() {
               "px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all",
               activeCategory === cat 
                 ? "bg-islamic-green text-white shadow-md shadow-islamic-green/10" 
-                : "bg-white text-slate-500 border border-slate-100 hover:border-islamic-green/30 hover:text-islamic-green"
+                : "bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-800 hover:border-islamic-green/30 dark:hover:border-emerald-500/30 hover:text-islamic-green dark:hover:text-emerald-400"
             )}
           >
             {cat}
@@ -160,14 +160,14 @@ export default function DuaView() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-white border border-slate-100 p-8 rounded-[2rem] shadow-sm hover:shadow-md transition-all group flex flex-col h-full"
+              className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-8 rounded-[2rem] shadow-sm hover:shadow-md transition-all group flex flex-col h-full"
             >
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-islamic-green/5 rounded-xl flex items-center justify-center text-islamic-green group-hover:bg-islamic-green group-hover:text-white transition-colors">
+                  <div className="w-10 h-10 bg-islamic-green/5 dark:bg-emerald-500/10 rounded-xl flex items-center justify-center text-islamic-green dark:text-emerald-400 group-hover:bg-islamic-green group-hover:text-white transition-colors">
                     <Heart className="w-5 h-5" />
                   </div>
-                  <h3 className="text-xl font-serif font-bold text-slate-800">{dua.title}</h3>
+                  <h3 className="text-xl font-serif font-bold text-slate-800 dark:text-slate-200">{dua.title}</h3>
                 </div>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-islamic-gold bg-islamic-gold/5 px-3 py-1 rounded-full">
                   {dua.category}
@@ -175,7 +175,7 @@ export default function DuaView() {
               </div>
 
               <div className="space-y-6 flex-1 flex flex-col justify-between">
-                <p className="arabic-text text-3xl text-right text-islamic-green leading-relaxed">
+                <p className="arabic-text text-3xl text-right text-islamic-green dark:text-emerald-400 leading-relaxed">
                   {dua.arabic}
                 </p>
                 <div className="space-y-4">

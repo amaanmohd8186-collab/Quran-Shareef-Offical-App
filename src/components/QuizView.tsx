@@ -48,17 +48,17 @@ export default function QuizView() {
         animate={{ opacity: 1, scale: 1 }}
         className="flex flex-col items-center justify-center h-full space-y-8 text-center max-w-2xl mx-auto"
       >
-        <div className="w-32 h-32 bg-islamic-green/10 rounded-full flex items-center justify-center text-islamic-green">
+        <div className="w-32 h-32 bg-islamic-green/10 dark:bg-emerald-500/20 rounded-full flex items-center justify-center text-islamic-green dark:text-emerald-400">
           <Trophy className="w-16 h-16" />
         </div>
         <div>
-          <h2 className="text-5xl font-serif text-islamic-green mb-2">Masha'Allah!</h2>
-          <p className="text-slate-500 text-xl">You've completed the Islamic Quiz.</p>
+          <h2 className="text-5xl font-serif text-islamic-green dark:text-emerald-400 mb-2">Masha'Allah!</h2>
+          <p className="text-slate-500 dark:text-slate-400 text-xl">You've completed the Islamic Quiz.</p>
         </div>
         
-        <div className="bg-white border border-slate-100 p-8 rounded-3xl shadow-sm w-full">
-          <div className="text-6xl font-serif text-islamic-green mb-2">{score} / {ISLAMIC_QUIZ_QUESTIONS.length}</div>
-          <p className="text-slate-500 uppercase tracking-widest text-sm">Your Final Score</p>
+        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-8 rounded-3xl shadow-sm w-full">
+          <div className="text-6xl font-serif text-islamic-green dark:text-emerald-400 mb-2">{score} / {ISLAMIC_QUIZ_QUESTIONS.length}</div>
+          <p className="text-slate-500 dark:text-slate-400 uppercase tracking-widest text-sm">Your Final Score</p>
         </div>
 
         <button 
@@ -75,10 +75,10 @@ export default function QuizView() {
     <div className="max-w-3xl mx-auto h-full flex flex-col">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-4xl font-serif text-islamic-green">Islamic Knowledge Quiz</h2>
-          <p className="text-slate-500 italic">Test your knowledge and learn more about Islam.</p>
+          <h2 className="text-4xl font-serif text-islamic-green dark:text-emerald-400">Islamic Knowledge Quiz</h2>
+          <p className="text-slate-500 dark:text-slate-400 italic">Test your knowledge and learn more about Islam.</p>
         </div>
-        <div className="bg-white px-4 py-2 rounded-full border border-slate-100 text-islamic-green font-serif font-bold">
+        <div className="bg-white dark:bg-slate-900 px-4 py-2 rounded-full border border-slate-100 dark:border-slate-800 text-islamic-green dark:text-emerald-400 font-serif font-bold">
           {currentQuestionIndex + 1} / {ISLAMIC_QUIZ_QUESTIONS.length}
         </div>
       </div>
@@ -92,8 +92,8 @@ export default function QuizView() {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
-            <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-              <h3 className="text-2xl font-serif text-slate-800 leading-relaxed">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
+              <h3 className="text-2xl font-serif text-slate-800 dark:text-slate-200 leading-relaxed">
                 {currentQuestion.question}
               </h3>
             </div>
@@ -110,7 +110,7 @@ export default function QuizView() {
                     disabled={isAnswered}
                     className={cn(
                       "flex items-center justify-between p-6 rounded-2xl border-2 transition-all text-left group",
-                      !isAnswered && "border-slate-100 hover:border-islamic-green/30 hover:bg-islamic-green/5",
+                      !isAnswered && "border-slate-100 dark:border-slate-800 hover:border-islamic-green/30 dark:hover:border-emerald-500/30 hover:bg-islamic-green/5 dark:bg-emerald-500/10",
                       isAnswered && isCorrect && "border-emerald-500 bg-emerald-50 text-emerald-900",
                       isAnswered && isSelected && !isCorrect && "border-rose-500 bg-rose-50 text-rose-900",
                       isAnswered && !isSelected && !isCorrect && "border-slate-50 opacity-50"
@@ -128,9 +128,9 @@ export default function QuizView() {
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-islamic-green/5 border border-islamic-green/10 p-6 rounded-2xl"
+                className="bg-islamic-green/5 dark:bg-emerald-500/10 border border-islamic-green/10 p-6 rounded-2xl"
               >
-                <p className="text-islamic-green font-semibold mb-1">Explanation:</p>
+                <p className="text-islamic-green dark:text-emerald-400 font-semibold mb-1">Explanation:</p>
                 <p className="text-slate-700 italic">{currentQuestion.explanation}</p>
               </motion.div>
             )}

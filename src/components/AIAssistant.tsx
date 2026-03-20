@@ -67,10 +67,10 @@ export default function AIAssistant() {
     <div className="flex flex-col h-full max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-4xl font-serif text-islamic-green flex items-center gap-3">
+          <h2 className="text-4xl font-serif text-islamic-green dark:text-emerald-400 flex items-center gap-3">
             Quran AI Assistant <Sparkles className="w-6 h-6 text-islamic-gold" />
           </h2>
-          <p className="text-slate-500 italic">Ask anything about Islam, Quran, or Hadith.</p>
+          <p className="text-slate-500 dark:text-slate-400 italic">Ask anything about Islam, Quran, or Hadith.</p>
         </div>
         <button 
           onClick={clearChat}
@@ -91,16 +91,16 @@ export default function AIAssistant() {
           >
             <div className={`flex max-w-[85%] gap-4 ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
               <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
-                m.role === 'user' ? 'bg-islamic-green text-white' : 'bg-white border border-slate-100 text-islamic-green shadow-sm'
+                m.role === 'user' ? 'bg-islamic-green text-white' : 'bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-islamic-green dark:text-emerald-400 shadow-sm'
               }`}>
                 {m.role === 'user' ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
               </div>
               <div className={`p-4 rounded-3xl shadow-sm ${
                 m.role === 'user' 
                   ? 'bg-islamic-green text-white rounded-tr-none' 
-                  : 'bg-white border border-slate-100 text-slate-800 rounded-tl-none'
+                  : 'bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-none'
               }`}>
-                <div className="prose prose-sm max-w-none prose-headings:font-serif prose-headings:text-islamic-green">
+                <div className="prose prose-sm max-w-none prose-headings:font-serif prose-headings:text-islamic-green dark:text-emerald-400">
                   <Markdown>{m.content}</Markdown>
                 </div>
               </div>
@@ -110,10 +110,10 @@ export default function AIAssistant() {
         {isLoading && (
           <div className="flex justify-start">
             <div className="flex gap-4">
-              <div className="w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-islamic-green shadow-sm">
+              <div className="w-10 h-10 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex items-center justify-center text-islamic-green dark:text-emerald-400 shadow-sm">
                 <Loader2 className="w-5 h-5 animate-spin" />
               </div>
-              <div className="p-4 bg-white border border-slate-100 rounded-3xl rounded-tl-none shadow-sm italic text-slate-400">
+              <div className="p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl rounded-tl-none shadow-sm italic text-slate-400">
                 Quran AI is thinking...
               </div>
             </div>
@@ -129,7 +129,7 @@ export default function AIAssistant() {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSend()}
           placeholder="Ask about prayer, fasting, Quran verses..."
-          className="w-full pl-6 pr-16 py-4 bg-white border border-slate-200 rounded-3xl focus:outline-none focus:ring-4 focus:ring-islamic-green/5 focus:border-islamic-green transition-all shadow-sm"
+          className="w-full pl-6 pr-16 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-3xl focus:outline-none focus:ring-4 focus:ring-islamic-green/5 focus:border-islamic-green dark:focus:border-emerald-500 transition-all shadow-sm"
         />
         <button
           onClick={handleSend}

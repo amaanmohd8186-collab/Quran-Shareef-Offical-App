@@ -332,13 +332,13 @@ export default function HadithView() {
     <div className="max-w-4xl mx-auto h-full flex flex-col">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-4xl font-serif text-islamic-green">Bilingual Hadith</h2>
-          <p className="text-slate-500 italic">Wisdom in English & Hindi (हिंदी).</p>
+          <h2 className="text-4xl font-serif text-islamic-green dark:text-emerald-400">Bilingual Hadith</h2>
+          <p className="text-slate-500 dark:text-slate-400 italic">Wisdom in English & Hindi (हिंदी).</p>
         </div>
         <button 
           onClick={nextHadith}
           disabled={loading}
-          className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-100 rounded-2xl text-islamic-green hover:bg-islamic-green/5 transition-all disabled:opacity-50 shadow-sm"
+          className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl text-islamic-green dark:text-emerald-400 hover:bg-islamic-green/5 dark:bg-emerald-500/10 transition-all disabled:opacity-50 shadow-sm"
         >
           <RefreshCcw className={cn("w-4 h-4", loading ? "animate-spin" : "")} />
           <span className="font-bold text-sm uppercase tracking-widest">Next Hadith</span>
@@ -355,18 +355,18 @@ export default function HadithView() {
             className="w-full space-y-6"
           >
             {/* English Card */}
-            <div className="bg-white border border-slate-100 p-10 rounded-[2.5rem] shadow-sm relative overflow-hidden group">
-              <Quote className="absolute top-6 left-6 w-12 h-12 text-islamic-green/5 -rotate-12" />
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-10 rounded-[2.5rem] shadow-sm relative overflow-hidden group">
+              <Quote className="absolute top-6 left-6 w-12 h-12 text-islamic-green dark:text-emerald-400/5 -rotate-12" />
               <div className="relative z-10 space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-islamic-green/40">
+                  <div className="flex items-center gap-2 text-islamic-green dark:text-emerald-400/40">
                     <Languages className="w-4 h-4" />
                     <span className="text-[10px] font-bold uppercase tracking-widest">English</span>
                   </div>
                   <button 
                     onClick={() => playHadithAudio(currentHadith.en, 'en')}
                     disabled={loadingAudio !== null && loadingAudio !== 'en'}
-                    className="p-2 bg-islamic-green/5 text-islamic-green rounded-full hover:bg-islamic-green/10 transition-all disabled:opacity-50"
+                    className="p-2 bg-islamic-green/5 dark:bg-emerald-500/10 text-islamic-green dark:text-emerald-400 rounded-full hover:bg-islamic-green/10 dark:bg-emerald-500/20 transition-all disabled:opacity-50"
                   >
                     {loadingAudio === 'en' ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -377,25 +377,25 @@ export default function HadithView() {
                     )}
                   </button>
                 </div>
-                <h3 className="text-2xl font-serif text-slate-800 leading-relaxed italic">
+                <h3 className="text-2xl font-serif text-slate-800 dark:text-slate-200 leading-relaxed italic">
                   "{currentHadith.en}"
                 </h3>
               </div>
             </div>
 
             {/* Hindi Card */}
-            <div className="bg-islamic-green/5 border border-islamic-green/10 p-10 rounded-[2.5rem] shadow-sm relative overflow-hidden group">
-              <Quote className="absolute top-6 left-6 w-12 h-12 text-islamic-green/5 -rotate-12" />
+            <div className="bg-islamic-green/5 dark:bg-emerald-500/10 border border-islamic-green/10 p-10 rounded-[2.5rem] shadow-sm relative overflow-hidden group">
+              <Quote className="absolute top-6 left-6 w-12 h-12 text-islamic-green dark:text-emerald-400/5 -rotate-12" />
               <div className="relative z-10 space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-islamic-green/40">
+                  <div className="flex items-center gap-2 text-islamic-green dark:text-emerald-400/40">
                     <Languages className="w-4 h-4" />
                     <span className="text-[10px] font-bold uppercase tracking-widest">Hindi • हिंदी</span>
                   </div>
                   <button 
                     onClick={() => playHadithAudio(currentHadith.hi, 'hi')}
                     disabled={loadingAudio !== null && loadingAudio !== 'hi'}
-                    className="p-2 bg-islamic-green/10 text-islamic-green rounded-full hover:bg-islamic-green/20 transition-all disabled:opacity-50"
+                    className="p-2 bg-islamic-green/10 dark:bg-emerald-500/20 text-islamic-green dark:text-emerald-400 rounded-full hover:bg-islamic-green/20 transition-all disabled:opacity-50"
                   >
                     {loadingAudio === 'hi' ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -406,7 +406,7 @@ export default function HadithView() {
                     )}
                   </button>
                 </div>
-                <h3 className="text-2xl font-serif text-islamic-green leading-relaxed italic">
+                <h3 className="text-2xl font-serif text-islamic-green dark:text-emerald-400 leading-relaxed italic">
                   "{currentHadith.hi}"
                 </h3>
               </div>
@@ -414,7 +414,7 @@ export default function HadithView() {
 
             <div className="text-center">
               <p className="text-slate-400 text-xs uppercase tracking-widest">Source Reference</p>
-              <p className="text-islamic-green font-serif font-bold text-lg">{currentHadith.ref}</p>
+              <p className="text-islamic-green dark:text-emerald-400 font-serif font-bold text-lg">{currentHadith.ref}</p>
             </div>
           </motion.div>
         </AnimatePresence>
