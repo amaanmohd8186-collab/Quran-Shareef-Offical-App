@@ -11,6 +11,7 @@ async function startServer() {
 
   // API routes
   app.get("/api/live-ziyarat", async (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
     try {
       const apiKey = process.env.YOUTUBE_API_KEY;
       if (!apiKey) {
