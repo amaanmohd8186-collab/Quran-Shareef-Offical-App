@@ -25,10 +25,23 @@ export interface SurahDetail extends Surah {
 
 export interface QuizQuestion {
   id: string;
-  question: string;
-  options: string[];
+  question: {
+    en: string;
+    hi: string;
+    ur: string;
+  };
+  options: {
+    en: string[];
+    hi: string[];
+    ur: string[];
+  };
   correctAnswer: number;
-  explanation: string;
+  explanation: {
+    en: string;
+    hi: string;
+    ur: string;
+  };
+  imageUrl?: string;
 }
 
 export interface Bookmark {
@@ -42,4 +55,4 @@ export interface Bookmark {
   timestamp: number;
 }
 
-export type AppView = 'home' | 'quran' | 'assistant' | 'quiz' | 'hadith' | 'dua' | 'hidayat' | 'tasbeeh' | 'settings' | 'prayer_alarm' | 'privacy' | 'asma_ul_husna' | 'calendar' | 'zakat_calculator' | 'islamic_history';
+export type AppView = 'home' | 'quran' | 'assistant' | 'quiz' | 'hadith' | 'dua' | 'hidayat' | 'tasbeeh' | 'settings' | 'prayer_alarm' | 'privacy' | 'asma_ul_husna' | 'calendar' | 'zakat_calculator' | 'islamic_history' | 'live_ziyarat';

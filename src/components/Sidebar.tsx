@@ -2,6 +2,7 @@ import React from 'react';
 import { Book, MessageSquare, BrainCircuit, Settings, Moon, Sun, Menu, X, Heart, Compass, Sparkles, Fingerprint, Home, Bell, Calendar as CalendarIcon, Calculator, Video, Users, History as HistoryIcon } from 'lucide-react';
 import { AppView } from '../types';
 import { cn } from '../lib/utils';
+import { motion } from 'motion/react';
 
 interface SidebarProps {
   activeView: AppView;
@@ -54,10 +55,12 @@ export default function Sidebar({ activeView, setActiveView, isOpen, setIsOpen, 
         />
       )}
 
-      <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 flex flex-col transition-all duration-300 ease-in-out lg:static lg:translate-x-0",
-        !isOpen && "-translate-x-full"
-      )}>
+      <motion.aside 
+        initial={false}
+        animate={{ x: isOpen ? 0 : '-100%' }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        className="fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 flex flex-col lg:static lg:translate-x-0"
+      >
         <div className="p-8 flex items-center gap-3">
           <div className="w-10 h-10 bg-islamic-green rounded-2xl flex items-center justify-center overflow-hidden shadow-lg shadow-islamic-green/20">
             <img 
@@ -88,8 +91,10 @@ export default function Sidebar({ activeView, setActiveView, isOpen, setIsOpen, 
 
         <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
           {menuItems.map((item) => (
-            <button
+            <motion.button
               key={item.id}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => {
                 setActiveView(item.id as AppView);
                 setIsOpen(false);
@@ -106,7 +111,7 @@ export default function Sidebar({ activeView, setActiveView, isOpen, setIsOpen, 
                 activeView === item.id ? "text-white dark:text-emerald-400" : "text-slate-400 group-hover:text-islamic-green dark:group-hover:text-emerald-400"
               )} />
               <span className="font-medium">{item.label}</span>
-            </button>
+            </motion.button>
           ))}
         </nav>
 
@@ -127,7 +132,7 @@ export default function Sidebar({ activeView, setActiveView, isOpen, setIsOpen, 
             </p>
           </div>
         </div>
-      </aside>
+      </motion.aside>
     </>
   );
 }

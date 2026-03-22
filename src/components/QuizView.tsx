@@ -1,16 +1,23 @@
 import React, { useState } from 'react';
 import { ISLAMIC_QUIZ_QUESTIONS } from '../constants';
-import { CheckCircle2, XCircle, RefreshCcw, Trophy, ArrowRight } from 'lucide-react';
+import { CheckCircle2, XCircle, RefreshCcw, Trophy, ArrowRight, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
 export default function QuizView() {
+  const [currentLevel, setCurrentLevel] = useState(1);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
+  const [language, setLanguage] = useState<'en' | 'hi' | 'ur'>('en');
 
+  const questionsPerLevel = 5;
+  const totalLevels = 20; // 20 levels * 5 questions = 100 questions
+
+  // In a real app, you'd fetch questions based on level. 
+  // For now, we slice the available questions.
   const currentQuestion = ISLAMIC_QUIZ_QUESTIONS[currentQuestionIndex];
 
   const handleOptionSelect = (index: number) => {
@@ -24,7 +31,7 @@ export default function QuizView() {
   };
 
   const handleNext = () => {
-    if (currentQuestionIndex < ISLAMIC_QUIZ_QUESTIONS.length - 1) {
+    if ((currentQuestionIndex + 1) % questionsPerLevel !== 0) {
       setCurrentQuestionIndex(prev => prev + 1);
       setSelectedOption(null);
       setIsAnswered(false);
@@ -33,7 +40,19 @@ export default function QuizView() {
     }
   };
 
+  const nextLevel = () => {
+    if (currentLevel < totalLevels) {
+      setCurrentLevel(prev => prev + 1);
+      setCurrentQuestionIndex(currentLevel * questionsPerLevel);
+      setScore(0);
+      setShowResult(false);
+      setSelectedOption(null);
+      setIsAnswered(false);
+    }
+  };
+
   const resetQuiz = () => {
+    setCurrentLevel(1);
     setCurrentQuestionIndex(0);
     setScore(0);
     setShowResult(false);
@@ -52,21 +71,32 @@ export default function QuizView() {
           <Trophy className="w-16 h-16" />
         </div>
         <div>
-          <h2 className="text-5xl font-serif text-islamic-green dark:text-emerald-400 mb-2">Masha'Allah!</h2>
-          <p className="text-slate-500 dark:text-slate-400 text-xl">You've completed the Islamic Quiz.</p>
+          <h2 className="text-5xl font-serif text-islamic-green dark:text-emerald-400 mb-2">Level {currentLevel} Complete!</h2>
+          <p className="text-slate-500 dark:text-slate-400 text-xl">Masha'Allah! You've finished this level.</p>
         </div>
         
         <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-8 rounded-3xl shadow-sm w-full">
-          <div className="text-6xl font-serif text-islamic-green dark:text-emerald-400 mb-2">{score} / {ISLAMIC_QUIZ_QUESTIONS.length}</div>
-          <p className="text-slate-500 dark:text-slate-400 uppercase tracking-widest text-sm">Your Final Score</p>
+          <div className="text-6xl font-serif text-islamic-green dark:text-emerald-400 mb-2">{score} / {questionsPerLevel}</div>
+          <p className="text-slate-500 dark:text-slate-400 uppercase tracking-widest text-sm">Level Score</p>
         </div>
 
-        <button 
-          onClick={resetQuiz}
-          className="flex items-center gap-2 px-8 py-4 bg-islamic-green text-white rounded-2xl hover:bg-islamic-green/90 transition-all font-semibold shadow-lg shadow-islamic-green/20"
-        >
-          <RefreshCcw className="w-5 h-5" /> Try Again
-        </button>
+        <div className="flex gap-4">
+          {currentLevel < totalLevels ? (
+            <button 
+              onClick={nextLevel}
+              className="flex items-center gap-2 px-8 py-4 bg-islamic-green text-white rounded-2xl hover:bg-islamic-green/90 transition-all font-semibold shadow-lg shadow-islamic-green/20"
+            >
+              Next Level <ArrowRight className="w-5 h-5" />
+            </button>
+          ) : (
+            <button 
+              onClick={resetQuiz}
+              className="flex items-center gap-2 px-8 py-4 bg-islamic-green text-white rounded-2xl hover:bg-islamic-green/90 transition-all font-semibold shadow-lg shadow-islamic-green/20"
+            >
+              <RefreshCcw className="w-5 h-5" /> Restart Quiz
+            </button>
+          )}
+        </div>
       </motion.div>
     );
   }
@@ -75,11 +105,22 @@ export default function QuizView() {
     <div className="max-w-3xl mx-auto h-full flex flex-col">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-4xl font-serif text-islamic-green dark:text-emerald-400">Islamic Knowledge Quiz</h2>
+          <h2 className="text-4xl font-serif text-islamic-green dark:text-emerald-400">Level {currentLevel}</h2>
           <p className="text-slate-500 dark:text-slate-400 italic">Test your knowledge and learn more about Islam.</p>
         </div>
-        <div className="bg-white dark:bg-slate-900 px-4 py-2 rounded-full border border-slate-100 dark:border-slate-800 text-islamic-green dark:text-emerald-400 font-serif font-bold">
-          {currentQuestionIndex + 1} / {ISLAMIC_QUIZ_QUESTIONS.length}
+        <div className="flex gap-2">
+          <select 
+            value={language} 
+            onChange={(e) => setLanguage(e.target.value as 'en' | 'hi' | 'ur')}
+            className="bg-white dark:bg-slate-900 px-4 py-2 rounded-full border border-slate-100 dark:border-slate-800 text-islamic-green dark:text-emerald-400 font-serif font-bold"
+          >
+            <option value="en">English</option>
+            <option value="hi">Hindi</option>
+            <option value="ur">Urdu</option>
+          </select>
+          <div className="bg-white dark:bg-slate-900 px-4 py-2 rounded-full border border-slate-100 dark:border-slate-800 text-islamic-green dark:text-emerald-400 font-serif font-bold">
+            {(currentQuestionIndex % questionsPerLevel) + 1} / {questionsPerLevel}
+          </div>
         </div>
       </div>
 
@@ -92,14 +133,17 @@ export default function QuizView() {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
+            {currentQuestion.imageUrl && (
+              <img src={currentQuestion.imageUrl} alt="Quiz" className="w-full h-64 object-cover rounded-3xl" referrerPolicy="no-referrer" />
+            )}
             <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
               <h3 className="text-2xl font-serif text-slate-800 dark:text-slate-200 leading-relaxed">
-                {currentQuestion.question}
+                {currentQuestion.question[language]}
               </h3>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
-              {currentQuestion.options.map((option, index) => {
+              {currentQuestion.options[language].map((option, index) => {
                 const isCorrect = index === currentQuestion.correctAnswer;
                 const isSelected = index === selectedOption;
                 
@@ -131,7 +175,7 @@ export default function QuizView() {
                 className="bg-islamic-green/5 dark:bg-emerald-500/10 border border-islamic-green/10 p-6 rounded-2xl"
               >
                 <p className="text-islamic-green dark:text-emerald-400 font-semibold mb-1">Explanation:</p>
-                <p className="text-slate-700 italic">{currentQuestion.explanation}</p>
+                <p className="text-slate-700 italic">{currentQuestion.explanation[language]}</p>
               </motion.div>
             )}
           </motion.div>
@@ -144,7 +188,7 @@ export default function QuizView() {
           disabled={!isAnswered}
           className="flex items-center gap-2 px-8 py-4 bg-islamic-green text-white rounded-2xl hover:bg-islamic-green/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold shadow-lg shadow-islamic-green/20"
         >
-          {currentQuestionIndex === ISLAMIC_QUIZ_QUESTIONS.length - 1 ? 'Finish Quiz' : 'Next Question'} 
+          {((currentQuestionIndex + 1) % questionsPerLevel === 0) ? 'Finish Level' : 'Next Question'} 
           <ArrowRight className="w-5 h-5" />
         </button>
       </div>

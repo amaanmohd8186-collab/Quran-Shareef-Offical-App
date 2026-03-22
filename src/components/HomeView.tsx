@@ -2,12 +2,14 @@ import React from 'react';
 import { Book, MessageSquare, BrainCircuit, Heart, Compass, Sparkles, Fingerprint, Settings, Quote, Calendar as CalendarIcon, Calculator, Video, Users } from 'lucide-react';
 import { AppView } from '../types';
 import { motion } from 'motion/react';
+import DailyInspiration from './DailyInspiration';
 
 interface HomeViewProps {
   setActiveView: (view: AppView) => void;
+  language: 'en' | 'hi' | 'ur';
 }
 
-export default function HomeView({ setActiveView }: HomeViewProps) {
+export default function HomeView({ setActiveView, language }: HomeViewProps) {
   const features = [
     { id: 'quran', label: 'Holy Quran', icon: Book, color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400', desc: 'Read and listen to the Holy Quran' },
     { id: 'assistant', label: 'Al-Huda AI', icon: MessageSquare, color: 'bg-blue-50 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400', desc: 'Ask questions about Islam' },
@@ -17,6 +19,7 @@ export default function HomeView({ setActiveView }: HomeViewProps) {
     { id: 'calendar', label: 'Islamic Calendar', icon: CalendarIcon, color: 'bg-cyan-50 text-cyan-600 dark:bg-cyan-500/20 dark:text-cyan-400', desc: 'Hijri calendar and events' },
     { id: 'zakat_calculator', label: 'Zakat Calculator', icon: Calculator, color: 'bg-yellow-50 text-yellow-600 dark:bg-yellow-500/20 dark:text-yellow-400', desc: 'Calculate your Zakat easily' },
     { id: 'tasbeeh', label: 'Tasbeeh', icon: Fingerprint, color: 'bg-teal-50 text-teal-600 dark:bg-teal-500/20 dark:text-teal-400', desc: 'Digital counter for Dhikr' },
+    { id: 'live_ziyarat', label: 'Live Ziyarat', icon: Video, color: 'bg-red-50 text-red-600 dark:bg-red-500/20 dark:text-red-400', desc: 'Live stream from Makkah & Madinah' },
     { id: 'hidayat', label: 'Hidayat', icon: Sparkles, color: 'bg-purple-50 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400', desc: 'Daily guidance and inspiration' },
     { id: 'quiz', label: 'Islamic Quiz', icon: BrainCircuit, color: 'bg-orange-50 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400', desc: 'Test your Islamic knowledge' },
     { id: 'settings', label: 'Settings', icon: Settings, color: 'bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-400', desc: 'Manage your preferences' },
@@ -57,16 +60,19 @@ export default function HomeView({ setActiveView }: HomeViewProps) {
         </div>
       </div>
 
+      <DailyInspiration language={language} />
+
       {/* Features Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 perspective-1000">
         {features.map((feature, index) => (
           <motion.button
             key={feature.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
+            whileHover={{ scale: 1.05, rotateX: 5, rotateY: 5 }}
             onClick={() => setActiveView(feature.id as AppView)}
-            className="group p-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 hover:border-islamic-green/30 dark:hover:border-emerald-500/30 hover:shadow-xl hover:shadow-islamic-green/5 dark:hover:shadow-emerald-500/5 transition-all text-left space-y-4"
+            className="group p-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 hover:shadow-2xl hover:shadow-islamic-green/20 dark:hover:shadow-emerald-500/20 transition-all text-left space-y-4 perspective-1000"
           >
             <div className={`w-12 h-12 ${feature.color} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
               <feature.icon className="w-6 h-6" />

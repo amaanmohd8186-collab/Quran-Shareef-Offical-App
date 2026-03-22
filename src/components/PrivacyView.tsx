@@ -77,7 +77,7 @@ export default function PrivacyView({ setActiveView }: PrivacyViewProps) {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <a 
                 href={`upi://pay?pa=9719818918@ybl&pn=Amaan%20Siddiqui&cu=INR`}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-islamic-green text-white rounded-xl font-bold text-sm hover:bg-islamic-green-dark transition-all shadow-sm"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-islamic-green text-white rounded-xl font-bold text-sm hover:bg-emerald-600 transition-all shadow-sm"
               >
                 Donate via UPI
               </a>
@@ -90,6 +90,13 @@ export default function PrivacyView({ setActiveView }: PrivacyViewProps) {
               >
                 Copy UPI ID
               </button>
+            </div>
+            <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded-xl text-left text-xs text-slate-600 dark:text-slate-400 space-y-1">
+              <p className="font-bold text-islamic-green dark:text-emerald-400">Bank Transfer Details:</p>
+              <p>Account Name: Amaan Siddiqui</p>
+              <p>Account Number: 42265745938</p>
+              <p>IFSC Code: SBIN0011598</p>
+              <p>Bank Name: State Bank of India</p>
             </div>
           </div>
         </div>

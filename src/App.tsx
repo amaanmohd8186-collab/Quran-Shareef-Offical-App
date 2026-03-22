@@ -15,6 +15,7 @@ import AsmaUlHusnaView from './components/AsmaUlHusnaView';
 import CalendarView from './components/CalendarView';
 import ZakatCalculatorView from './components/ZakatCalculatorView';
 import IslamicHistoryView from './components/IslamicHistoryView';
+import LiveZiyaratView from './components/LiveZiyaratView';
 import { AppView } from './types';
 import { Menu, Volume2, X, Heart, Moon, Sun } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -26,6 +27,7 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAlarmPlaying, setIsAlarmPlaying] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [language, setLanguage] = useState<'en' | 'hi' | 'ur'>('en');
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -97,7 +99,7 @@ export default function App() {
   const renderView = () => {
     switch (activeView) {
       case 'home':
-        return <HomeView setActiveView={setActiveView} />;
+        return <HomeView setActiveView={setActiveView} language={language} />;
       case 'quran':
         return <QuranView />;
       case 'assistant':
@@ -120,6 +122,8 @@ export default function App() {
         return <ZakatCalculatorView />;
       case 'islamic_history':
         return <IslamicHistoryView />;
+      case 'live_ziyarat':
+        return <LiveZiyaratView setActiveView={setActiveView} />;
       case 'prayer_alarm':
         return <PrayerAlarmView isAlarmPlaying={isAlarmPlaying} stopAlarm={stopAlarm} />;
       case 'settings':
@@ -127,7 +131,7 @@ export default function App() {
       case 'privacy':
         return <PrivacyView setActiveView={setActiveView} />;
       default:
-        return <HomeView setActiveView={setActiveView} />;
+        return <HomeView setActiveView={setActiveView} language={language} />;
     }
   };
 
@@ -194,13 +198,22 @@ export default function App() {
             <h1 className="text-xl font-serif font-bold text-islamic-green">Quran Shareef</h1>
           </div>
           <div className="flex items-center gap-2">
-            <a 
-              href={`upi://pay?pa=9719818918@ybl&pn=Amaan%20Siddiqui&cu=INR`}
-              className="flex items-center gap-1 px-3 py-1.5 bg-islamic-green/10 text-islamic-green dark:text-emerald-400 rounded-full text-xs font-bold hover:bg-islamic-green/20 transition-colors"
-            >
-              <Heart className="w-3 h-3 fill-current" />
-              Donate
-            </a>
+            <div className="relative group">
+              <a 
+                href={`upi://pay?pa=9719818918@ybl&pn=Amaan%20Siddiqui&cu=INR`}
+                className="flex items-center gap-1 px-3 py-1.5 bg-islamic-green/10 text-islamic-green dark:text-emerald-400 rounded-full text-xs font-bold hover:bg-islamic-green/20 transition-colors"
+              >
+                <Heart className="w-3 h-3 fill-current" />
+                Donate
+              </a>
+              <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 hidden group-hover:block z-50 text-xs text-slate-600 dark:text-slate-400 space-y-1">
+                <p className="font-bold text-islamic-green dark:text-emerald-400">Bank Transfer Details:</p>
+                <p>Account Name: Amaan Siddiqui</p>
+                <p>Account Number: 42265745938</p>
+                <p>IFSC Code: SBIN0011598</p>
+                <p>Bank Name: State Bank of India</p>
+              </div>
+            </div>
             <button 
               onClick={toggleTheme}
               className="p-2 text-slate-500 hover:text-islamic-green dark:text-slate-400 dark:hover:text-emerald-400 transition-colors"
@@ -218,7 +231,18 @@ export default function App() {
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12">
           <div className="max-w-7xl mx-auto h-full">
-            {renderView()}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeView}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="h-full"
+              >
+                {renderView()}
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </main>
