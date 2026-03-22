@@ -15,7 +15,7 @@ export default function LiveZiyaratView({ setActiveView }: LiveZiyaratViewProps)
   const fetchStreams = () => {
     setLoading(true);
     setError(null);
-    fetch('/api/live-ziyarat')
+    fetch('/api/ziyarat')
       .then(res => {
         if (!res.ok) {
           return res.json().then(err => {
