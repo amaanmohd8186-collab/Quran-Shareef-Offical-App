@@ -24,7 +24,7 @@ export default function PrivacyView({ setActiveView }: PrivacyViewProps) {
 
       <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-800 space-y-8">
         <div className="space-y-2">
-          <p className="text-slate-500 dark:text-slate-400 text-sm">Last Updated: March 10, 2026</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">Last Updated: March 22, 2026</p>
           <p className="text-slate-700 leading-relaxed font-medium">
             Welcome to Al-Huda. Your privacy is critically important to us.
           </p>

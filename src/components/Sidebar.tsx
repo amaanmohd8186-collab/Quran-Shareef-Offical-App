@@ -1,5 +1,5 @@
 import React from 'react';
-import { Book, MessageSquare, BrainCircuit, Settings, Moon, Sun, Menu, X, Heart, Compass, Sparkles, Fingerprint, Home, Bell, Calendar as CalendarIcon, Calculator, Video } from 'lucide-react';
+import { Book, MessageSquare, BrainCircuit, Settings, Moon, Sun, Menu, X, Heart, Compass, Sparkles, Fingerprint, Home, Bell, Calendar as CalendarIcon, Calculator, Video, Users, History as HistoryIcon } from 'lucide-react';
 import { AppView } from '../types';
 import { cn } from '../lib/utils';
 
@@ -30,13 +30,13 @@ export default function Sidebar({ activeView, setActiveView, isOpen, setIsOpen, 
   const menuItems = [
     { id: 'home', label: 'Home', icon: Home },
     { id: 'quran', label: 'Holy Quran', icon: Book },
+    { id: 'islamic_history', label: 'Islamic History', icon: HistoryIcon },
     { id: 'assistant', label: 'Quran AI', icon: MessageSquare },
     { id: 'hadith', label: 'Hadith', icon: MessageSquare },
     { id: 'dua', label: 'Duas', icon: Heart },
     { id: 'asma_ul_husna', label: '99 Names', icon: Sparkles },
     { id: 'calendar', label: 'Islamic Calendar', icon: CalendarIcon },
-  { id: 'zakat_calculator', label: 'Zakat Calculator', icon: Calculator },
-  { id: 'live_makkah', label: 'Live Makkah', icon: Video },
+    { id: 'zakat_calculator', label: 'Zakat Calculator', icon: Calculator },
     { id: 'prayer_alarm', label: 'Prayer Alarm', icon: Bell },
     { id: 'tasbeeh', label: 'Tasbeeh', icon: Fingerprint },
     { id: 'hidayat', label: 'Hidayat', icon: Sparkles },

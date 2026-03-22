@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from './components/Sidebar';
 import QuranView from './components/QuranView';
-import AIAssistant from './components/AIAssistant';
 import QuizView from './components/QuizView';
 import HadithView from './components/HadithView';
 import DuaView from './components/DuaView';
 import HidayatView from './components/HidayatView';
 import TasbeehView from './components/TasbeehView';
+import AIAssistant from './components/AIAssistant';
 import SettingsView from './components/SettingsView';
 import PrivacyView from './components/PrivacyView';
 import HomeView from './components/HomeView';
@@ -14,7 +14,7 @@ import PrayerAlarmView from './components/PrayerAlarmView';
 import AsmaUlHusnaView from './components/AsmaUlHusnaView';
 import CalendarView from './components/CalendarView';
 import ZakatCalculatorView from './components/ZakatCalculatorView';
-import LiveMakkahView from './components/LiveMakkahView';
+import IslamicHistoryView from './components/IslamicHistoryView';
 import { AppView } from './types';
 import { Menu, Volume2, X, Heart, Moon, Sun } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -107,7 +107,7 @@ export default function App() {
       case 'dua':
         return <DuaView />;
       case 'tasbeeh':
-        return <TasbeehView />;
+        return <TasbeehView setActiveView={setActiveView} />;
       case 'hidayat':
         return <HidayatView />;
       case 'quiz':
@@ -118,8 +118,8 @@ export default function App() {
         return <CalendarView />;
       case 'zakat_calculator':
         return <ZakatCalculatorView />;
-      case 'live_makkah':
-        return <LiveMakkahView />;
+      case 'islamic_history':
+        return <IslamicHistoryView />;
       case 'prayer_alarm':
         return <PrayerAlarmView isAlarmPlaying={isAlarmPlaying} stopAlarm={stopAlarm} />;
       case 'settings':

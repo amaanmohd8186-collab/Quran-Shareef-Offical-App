@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, BookOpen, ChevronRight, Loader2, Play, Pause, Volume2, SkipBack, SkipForward, Download, CheckCircle2, UserCircle, Languages, X, Youtube, FileText, Bookmark, BookmarkCheck, Heart, Trash2 } from 'lucide-react';
+import { GoogleGenAI } from "@google/genai";
 import { Surah, SurahDetail, Ayah, Bookmark as BookmarkType } from '../types';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
@@ -19,6 +20,8 @@ const TRANSLATIONS = [
   { id: 'en.sahih', name: 'English (Sahih International)' },
   { id: 'ur.jalandhry', name: 'Urdu (Jalandhry)' },
   { id: 'fr.hamidullah', name: 'French (Hamidullah)' },
+  { id: 'hi.hindi', name: 'Hindi (Hindi)' },
+  { id: 'bn.bengali', name: 'Bengali (Bengali)' },
 ];
 
 export default function QuranView() {
@@ -262,7 +265,7 @@ Format the response in clean HTML using <p>, <strong>, and <ul> tags. Do not use
         for await (const chunk of responseStream) {
           if (tafsirAbortController.current?.signal.aborted) break;
           fullText += chunk.text;
-          setTafsirContent(fullText);
+          setTafsirContent(fullText.replace(/```/g, ''));
         }
       }
     } catch (err: any) {

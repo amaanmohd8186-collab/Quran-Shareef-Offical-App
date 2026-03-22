@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { RotateCcw, Plus, Minus, History, Trash2, Volume2, VolumeX, Vibrate } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { RotateCcw, History, Trash2, Volume2, VolumeX, Vibrate, Home } from 'lucide-react';
+import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
+import { AppView } from '../types';
 
 interface TasbeehSession {
   id: string;
@@ -10,14 +11,21 @@ interface TasbeehSession {
   label: string;
 }
 
-export default function TasbeehView() {
+interface TasbeehViewProps {
+  setActiveView: (view: AppView) => void;
+}
+
+export default function TasbeehView({ setActiveView }: TasbeehViewProps) {
   const [count, setCount] = useState(0);
-  const [target, setTarget] = useState(33);
   const [sessions, setSessions] = useState<TasbeehSession[]>([]);
-  const [showHistory, setShowHistory] = useState(false);
-  const [vibrate, setVibrate] = useState(true);
-  const [sound, setSound] = useState(false);
+  const [vibrate, setVibrate] = useState(() => localStorage.getItem('tasbeeh_vibrate') !== 'false');
+  const [sound, setSound] = useState(() => localStorage.getItem('tasbeeh_sound') === 'true');
   const clickAudio = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem('tasbeeh_vibrate', vibrate.toString());
+    localStorage.setItem('tasbeeh_sound', sound.toString());
+  }, [vibrate, sound]);
 
   useEffect(() => {
     const savedSessions = localStorage.getItem('tasbeeh_sessions');
@@ -27,10 +35,6 @@ export default function TasbeehView() {
     
     // Create a simple click sound
     const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
-    oscillator.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
     
     clickAudio.current = {
       play: () => {
@@ -60,166 +64,89 @@ export default function TasbeehView() {
   };
 
   const reset = () => {
-    if (count > 0) {
-      const newSession: TasbeehSession = {
-        id: Date.now().toString(),
-        count,
-        date: new Date().toLocaleString(),
-        label: count >= target ? 'Completed' : 'Partial'
-      };
-      const updatedSessions = [newSession, ...sessions].slice(0, 50);
-      setSessions(updatedSessions);
-      localStorage.setItem('tasbeeh_sessions', JSON.stringify(updatedSessions));
-    }
     setCount(0);
   };
 
-  const clearHistory = () => {
-    setSessions([]);
-    localStorage.removeItem('tasbeeh_sessions');
+  const saveSession = () => {
+    const newSession: TasbeehSession = {
+      id: Date.now().toString(),
+      count,
+      date: new Date().toLocaleString(),
+      label: 'Completed'
+    };
+    const updatedSessions = [newSession, ...sessions];
+    setSessions(updatedSessions);
+    localStorage.setItem('tasbeeh_sessions', JSON.stringify(updatedSessions));
+    setCount(0);
   };
 
   return (
-    <div className="max-w-4xl mx-auto h-full flex flex-col items-center justify-center p-6">
-      <div className="text-center mb-12">
-        <h2 className="text-4xl font-serif text-islamic-green dark:text-emerald-400">Digital Tasbeeh</h2>
-        <p className="text-slate-500 dark:text-slate-400 italic mt-2">Keep track of your Dhikr with ease.</p>
-      </div>
-
-      <div className="relative w-full max-w-md aspect-square flex flex-col items-center justify-center bg-slate-900 rounded-[3rem] shadow-2xl border-4 border-slate-800 p-12 overflow-hidden">
-        {/* Progress Ring Background */}
-        <div className="absolute inset-8 rounded-full border-8 border-slate-800" />
+    <div className="max-w-md mx-auto h-full flex flex-col items-center justify-center p-6 bg-slate-100 dark:bg-slate-950">
+      
+      {/* Device Body */}
+      <div className="relative w-72 h-96 bg-cyan-500 rounded-[3rem] shadow-2xl border-b-8 border-cyan-700 flex flex-col items-center p-6">
+        {/* Beaded Texture Effect */}
+        <div className="absolute inset-0 rounded-[3rem] border-4 border-cyan-400 opacity-50 pointer-events-none"></div>
         
-        {/* Progress Ring Active */}
-        <svg className="absolute inset-8 w-[calc(100%-64px)] h-[calc(100%-64px)] -rotate-90">
-          <circle
-            cx="50%"
-            cy="50%"
-            r="48%"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="8"
-            className="text-islamic-green dark:text-emerald-400 transition-all duration-300"
-            style={{ strokeDasharray: '283', strokeDashoffset: `${283 - (Math.min(count, target) / target * 283)}` }}
-          />
-        </svg>
-
-        <div className="relative z-10 flex flex-col items-center">
-          <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-500 dark:text-slate-400 mb-4">Digital Counter</p>
+        {/* Screen */}
+        <div className="w-full h-24 bg-black rounded-2xl border-4 border-cyan-900 flex flex-col items-center justify-center mb-8 shadow-inner">
+          <p className="text-[10px] font-bold text-cyan-800 uppercase tracking-[0.2em] mb-1">Tally Counter</p>
           <motion.h3 
             key={count}
             initial={{ scale: 0.9, opacity: 0.5 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="text-9xl font-mono font-bold text-islamic-green dark:text-emerald-400 drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+            className="text-5xl font-mono font-bold text-cyan-400"
           >
-            {count.toString().padStart(2, '0')}
+            {count.toString().padStart(5, '0')}
           </motion.h3>
-          <div className="mt-6 flex items-center gap-2 px-4 py-1 bg-islamic-green/10 dark:bg-emerald-500/20 rounded-full border border-islamic-green/20">
-            <span className="text-[10px] font-bold text-islamic-green dark:text-emerald-400 uppercase tracking-widest">Target: {target}</span>
-          </div>
         </div>
 
+        {/* Main Count Button */}
         <button
           onClick={increment}
-          className="absolute inset-0 w-full h-full cursor-pointer opacity-0 z-20"
-          aria-label="Increment count"
-        />
-
-        <div className="absolute top-8 right-8 flex flex-col gap-4 z-30">
-          <button 
-            onClick={() => setVibrate(!vibrate)}
-            className={cn("p-2 rounded-lg transition-colors", vibrate ? "text-islamic-green dark:text-emerald-400 bg-islamic-green/10 dark:bg-emerald-500/20" : "text-slate-600 dark:text-slate-400 bg-slate-800")}
-          >
-            <Vibrate className="w-4 h-4" />
-          </button>
-          <button 
-            onClick={() => setSound(!sound)}
-            className={cn("p-2 rounded-lg transition-colors", sound ? "text-islamic-green dark:text-emerald-400 bg-islamic-green/10 dark:bg-emerald-500/20" : "text-slate-600 dark:text-slate-400 bg-slate-800")}
-          >
-            {sound ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-          </button>
-        </div>
-
-        <div className="absolute bottom-12 flex gap-6 z-30">
-          <button 
-            onClick={reset}
-            className="p-4 bg-slate-800 text-slate-300 rounded-2xl hover:bg-slate-700 transition-colors shadow-sm border border-slate-700"
-            title="Reset and save"
-          >
-            <RotateCcw className="w-6 h-6" />
-          </button>
-        </div>
-      </div>
-
-      <div className="mt-8 flex bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-1 shadow-sm">
-        {[33, 99, 100].map(t => (
-          <button
-            key={t}
-            onClick={() => setTarget(t)}
-            className={cn(
-              "px-6 py-2 rounded-xl text-xs font-bold transition-all",
-              target === t ? "bg-islamic-green text-white shadow-md" : "text-slate-400 hover:text-islamic-green dark:hover:text-emerald-400"
-            )}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-
-      <div className="mt-12 w-full max-w-md">
-        <button 
-          onClick={() => setShowHistory(!showHistory)}
-          className="w-full flex items-center justify-between px-6 py-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm"
+          className="w-24 h-24 bg-slate-300 rounded-full shadow-[0_10px_0_#94a3b8] active:shadow-none active:translate-y-2 transition-all border-4 border-slate-400 mb-6"
+          aria-label="Count"
         >
-          <div className="flex items-center gap-3">
-            <History className="w-5 h-5 text-islamic-green dark:text-emerald-400" />
-            <span className="font-bold text-sm uppercase tracking-widest">Dhikr History</span>
-          </div>
-          <span className="text-xs font-medium bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">{sessions.length}</span>
+          <span className="text-slate-600 font-bold">COUNT</span>
         </button>
 
-        <AnimatePresence>
-          {showHistory && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="mt-4 space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
-                {sessions.length === 0 ? (
-                  <p className="text-center py-8 text-slate-400 text-sm italic">No history yet.</p>
-                ) : (
-                  <>
-                    {sessions.map(session => (
-                      <div key={session.id} className="bg-white dark:bg-slate-900 border border-slate-50 p-4 rounded-xl flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-bold text-slate-700">{session.count} Counts</p>
-                          <p className="text-[10px] text-slate-400">{session.date}</p>
-                        </div>
-                        <span className={cn(
-                          "text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-lg",
-                          session.label === 'Completed' ? "bg-islamic-green/10 dark:bg-emerald-500/20 text-islamic-green dark:text-emerald-400" : "bg-amber-100 text-amber-700"
-                        )}>
-                          {session.label}
-                        </span>
-                      </div>
-                    ))}
-                    <button 
-                      onClick={clearHistory}
-                      className="w-full py-3 text-rose-500 text-xs font-bold uppercase tracking-widest hover:bg-rose-50 rounded-xl transition-colors flex items-center justify-center gap-2"
-                    >
-                      <Trash2 className="w-4 h-4" /> Clear History
-                    </button>
-                  </>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Reset Button */}
+        <button
+          onClick={reset}
+          className="w-16 h-16 bg-slate-400 rounded-full shadow-[0_5px_0_#64748b] active:shadow-none active:translate-y-1 transition-all border-4 border-slate-500"
+          aria-label="Reset"
+        >
+          <span className="text-slate-700 font-bold text-xs">RESET</span>
+        </button>
       </div>
 
-      <p className="mt-8 text-slate-400 text-xs italic">Tip: Tap anywhere on the counter to increment.</p>
+      {/* Controls & History */}
+      <div className="w-full mt-8 flex justify-center gap-4">
+        <button onClick={() => setActiveView('home')} className="p-4 bg-white dark:bg-slate-900 rounded-2xl shadow-sm text-slate-600"><Home /></button>
+        <button onClick={saveSession} className="p-4 bg-islamic-green text-white rounded-2xl shadow-sm font-bold">Save Session</button>
+        <button onClick={() => setVibrate(!vibrate)} className={cn("p-4 rounded-2xl", vibrate ? "bg-cyan-500 text-white" : "bg-slate-200")}>
+          <Vibrate />
+        </button>
+        <button onClick={() => setSound(!sound)} className={cn("p-4 rounded-2xl", sound ? "bg-cyan-500 text-white" : "bg-slate-200")}>
+          {sound ? <Volume2 /> : <VolumeX />}
+        </button>
+      </div>
+
+      {/* History */}
+      <div className="w-full mt-8 bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="font-bold flex items-center gap-2"><History className="w-4 h-4"/> History</h4>
+          <button onClick={() => setSessions([])} className="text-rose-500 text-xs font-bold"><Trash2 className="w-4 h-4"/></button>
+        </div>
+        <div className="space-y-2 max-h-40 overflow-y-auto">
+          {sessions.map(s => (
+            <div key={s.id} className="flex justify-between text-sm p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
+              <span>{s.count}</span>
+              <span className="text-slate-400 text-xs">{s.date}</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

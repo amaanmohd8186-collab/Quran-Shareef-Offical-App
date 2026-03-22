@@ -1,5 +1,5 @@
 import React from 'react';
-import { Book, MessageSquare, BrainCircuit, Heart, Compass, Sparkles, Fingerprint, Settings, Quote, Calendar as CalendarIcon, Calculator, Video } from 'lucide-react';
+import { Book, MessageSquare, BrainCircuit, Heart, Compass, Sparkles, Fingerprint, Settings, Quote, Calendar as CalendarIcon, Calculator, Video, Users } from 'lucide-react';
 import { AppView } from '../types';
 import { motion } from 'motion/react';
 
@@ -16,7 +16,6 @@ export default function HomeView({ setActiveView }: HomeViewProps) {
     { id: 'asma_ul_husna', label: '99 Names', icon: Sparkles, color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400', desc: 'Asma ul Husna with audio' },
     { id: 'calendar', label: 'Islamic Calendar', icon: CalendarIcon, color: 'bg-cyan-50 text-cyan-600 dark:bg-cyan-500/20 dark:text-cyan-400', desc: 'Hijri calendar and events' },
     { id: 'zakat_calculator', label: 'Zakat Calculator', icon: Calculator, color: 'bg-yellow-50 text-yellow-600 dark:bg-yellow-500/20 dark:text-yellow-400', desc: 'Calculate your Zakat easily' },
-    { id: 'live_makkah', label: 'Live Makkah', icon: Video, color: 'bg-red-50 text-red-600 dark:bg-red-500/20 dark:text-red-400', desc: 'Watch Live Makkah & Madinah' },
     { id: 'tasbeeh', label: 'Tasbeeh', icon: Fingerprint, color: 'bg-teal-50 text-teal-600 dark:bg-teal-500/20 dark:text-teal-400', desc: 'Digital counter for Dhikr' },
     { id: 'hidayat', label: 'Hidayat', icon: Sparkles, color: 'bg-purple-50 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400', desc: 'Daily guidance and inspiration' },
     { id: 'quiz', label: 'Islamic Quiz', icon: BrainCircuit, color: 'bg-orange-50 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400', desc: 'Test your Islamic knowledge' },
@@ -82,7 +81,7 @@ export default function HomeView({ setActiveView }: HomeViewProps) {
 
       {/* Footer Quote */}
       <div className="text-center pt-8 border-t border-slate-100 dark:border-slate-800 transition-colors">
-        <p className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-[0.3em] font-bold transition-colors">Guided by Faith • Powered by AI</p>
+        <p className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-[0.3em] font-bold transition-colors">Guided by Faith • Powered by Amaan Siddiqui</p>
       </div>
     </div>
   );

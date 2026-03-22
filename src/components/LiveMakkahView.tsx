@@ -28,7 +28,7 @@ export default function LiveMakkahView() {
           <div className="aspect-video bg-slate-900 relative">
             <iframe 
               className="absolute inset-0 w-full h-full"
-              src="https://www.youtube.com/embed/live_stream?channel=UCeKBceOAqiO1EPQWqHhK3ow&autoplay=1&mute=1" 
+              src="https://share.google/hcHAdNrg9DMg04C6c" 
               title="Makkah Live" 
               frameBorder="0" 
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
