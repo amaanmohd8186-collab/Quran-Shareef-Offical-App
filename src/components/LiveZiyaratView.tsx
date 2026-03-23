@@ -16,13 +16,12 @@ export default function LiveZiyaratView({ setActiveView }: LiveZiyaratViewProps)
     setLoading(true);
     setError(null);
     fetch('/api/ziyarat')
-      .then(res => {
+      .then(async res => {
+        const data = await res.json();
         if (!res.ok) {
-          return res.json().then(err => {
-            throw new Error(err.error?.message || 'Failed to fetch streams');
-          });
+          throw new Error(data.message || data.error || `Server error: ${res.status}`);
         }
-        return res.json();
+        return data;
       })
       .then(data => {
         console.log("Client received data:", data);
@@ -33,13 +32,13 @@ export default function LiveZiyaratView({ setActiveView }: LiveZiyaratViewProps)
             videoId: item.id.videoId
           })));
         } else {
-          setError(`No live streams found. Items: ${JSON.stringify(data.items)}`);
+          setError(`No live streams found.`);
         }
         setLoading(false);
       })
       .catch(err => {
-        console.error(err);
-        setError(err.message || 'Failed to load live streams.');
+        console.error("Fetch error:", err);
+        setError(`Error: ${err.message}`);
         setLoading(false);
       });
   };

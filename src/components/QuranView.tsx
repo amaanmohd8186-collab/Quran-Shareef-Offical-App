@@ -31,7 +31,6 @@ export default function QuranView() {
   const [selectedSurah, setSelectedSurah] = useState<SurahDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [viewMode, setViewMode] = useState<'surah' | 'juz'>('surah');
-  const [downloadingSurahs, setDownloadingSurahs] = useState<Record<number, boolean>>({});
   const [cachedSurahs, setCachedSurahs] = useState<number[]>([]);
   const [selectedReciter, setSelectedReciter] = useState(RECITERS[0].id);
   const [showReciterMenu, setShowReciterMenu] = useState(false);
@@ -112,56 +111,6 @@ export default function QuranView() {
     }
   };
 
-  const downloadSurahAudio = async (number: number) => {
-    if (downloadingSurahs[number]) return;
-    
-    setDownloadingSurahs(prev => ({ ...prev, [number]: true }));
-    
-    try {
-      // 1. Fetch text detail and cache it
-      await fetchSurahDetail(number);
-      
-      // 2. Fetch audio and cache it
-      // Try Islamic Network first
-      let url = `https://cdn.islamic.network/quran/audio-surah/128/${selectedReciter}/${number}.mp3`;
-      let response = await fetch(url);
-      
-      if (!response.ok) {
-        // Fallback to QuranicAudio Download Server
-        const s = number.toString().padStart(3, '0');
-        const qAudioMap: Record<string, string> = {
-          'ar.alafasy': 'mishari_rashid_alafasy',
-          'ar.hudhaify': 'ali_alhuthaifi',
-          'ar.abdulsamad': 'abdul_basit_murattal',
-          'ar.abdurrahmaansudais': 'abdurrahman_as-sudais',
-          'ar.mahermuaiqly': 'maher_almuaiqly',
-          'ar.minshawi': 'muhammad_siddeeq_al-minshaawee',
-          'ar.saoodshuraym': 'sa3ood_ash-shuraym'
-        };
-        const reciter = qAudioMap[selectedReciter] || 'mishari_rashid_alafasy';
-        url = `https://download.quranicaudio.com/quran/${reciter}/${s}.mp3`;
-        response = await fetch(url);
-      }
-
-      if (!response.ok) throw new Error('Failed to fetch audio from all sources');
-      
-      const cache = await caches.open(CACHE_NAME);
-      await cache.put(url, response);
-      
-      // Store the URL that worked so we can play it from cache later
-      const workedUrlKey = `quran_audio_url_${number}_${selectedReciter}`;
-      localStorage.setItem(workedUrlKey, url);
-      
-      const updated = [...new Set([...cachedSurahs, number])];
-      setCachedSurahs(updated);
-      localStorage.setItem('quran_cached_surahs', JSON.stringify(updated));
-    } catch (error) {
-      console.error('Download failed:', error);
-      alert('Failed to download audio for offline use.');
-    } finally {
-      setDownloadingSurahs(prev => ({ ...prev, [number]: false }));
-    }
-  };
 
   const removeCachedSurah = async (number: number) => {
     const workedUrlKey = `quran_audio_url_${number}_${selectedReciter}`;
@@ -325,12 +274,6 @@ Format the response in clean HTML using <p>, <strong>, and <ul> tags. Do not use
     }
   };
 
-  const downloadSurah = async (number: number) => {
-    if (cachedSurahs.includes(number)) return;
-    setLoadingDetail(true);
-    await fetchSurahDetail(number);
-    setLoadingDetail(false);
-  };
 
   const playAudio = async (url: string, context?: { ayahGlobal?: number, surahNum?: number, ayahInSurah?: number }, isFallback = false) => {
     if (!isFallback) {
@@ -483,7 +426,7 @@ Format the response in clean HTML using <p>, <strong>, and <ul> tags. Do not use
             // Stage 2: Quran.com CDN (Most reliable)
             const quranCdnMap: Record<string, string> = {
               'ar.alafasy': 'Mishari_Rashid_Al-Afasy',
-              'ar.hudhaify': 'Ali_Al-Huthaifi',
+              'ar.hudhaify': 'Ali_Al-Huthaify',
               'ar.minshawi': 'Muhammad_Siddiq_al-Minshawi',
               'ar.abdulsamad': 'Abdul_Basit_Murattal',
               'ar.abdurrahmaansudais': 'Abdurrahmaan_As-Sudais',
@@ -505,6 +448,19 @@ Format the response in clean HTML using <p>, <strong>, and <ul> tags. Do not use
             };
             const reciter = everyAyahMap[selectedReciter] || 'Alafasy_128kbps';
             fallbackUrl = `https://www.everyayah.com/data/${reciter}/${s}${a}.mp3`;
+          } else if (stage === 3) {
+            // Stage 4: Verses.quran.com
+            const versesMap: Record<string, string> = {
+              'ar.alafasy': 'Mishari_Rashid_Al-Afasy',
+              'ar.abdulsamad': 'Abdul_Basit_Murattal',
+              'ar.hudhaify': 'Ali_Al-Huthaify',
+              'ar.minshawi': 'Muhammad_Siddiq_al-Minshawi',
+              'ar.abdurrahmaansudais': 'Abdurrahmaan_As-Sudais',
+              'ar.mahermuaiqly': 'Maher_Al-Muaiqly',
+              'ar.saoodshuraym': 'Sa\'ood_ash-Shuraym'
+            };
+            const reciter = versesMap[selectedReciter] || 'Mishari_Rashid_Al-Afasy';
+            fallbackUrl = `https://verses.quran.com/${reciter}/mp3/${s}${a}.mp3`;
           }
         } 
         // If it's a Surah audio
@@ -849,22 +805,12 @@ Format the response in clean HTML using <p>, <strong>, and <ul> tags. Do not use
                           <button 
                             onClick={(e) => {
                               e.stopPropagation();
-                              downloadSurahAudio(surah.number);
+                              removeCachedSurah(surah.number);
                             }}
-                            className={cn(
-                              "p-1 rounded-md transition-all",
-                              downloadingSurahs[surah.number] 
-                                ? "bg-islamic-green/10 dark:bg-emerald-500/20 text-islamic-green dark:text-emerald-400 animate-pulse" 
-                                : "hover:bg-islamic-green/10 dark:bg-emerald-500/20 text-slate-300 hover:text-islamic-green dark:hover:text-emerald-400"
-                            )}
-                            title="Download for offline"
-                            disabled={downloadingSurahs[surah.number]}
+                            className="p-1 rounded-md transition-all hover:bg-red-500/10 dark:hover:bg-red-500/20 text-islamic-green dark:text-emerald-400 hover:text-red-500 dark:hover:text-red-400"
+                            title="Remove from offline"
                           >
-                            {downloadingSurahs[surah.number] ? (
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                            ) : (
-                              <Download className="w-3 h-3" />
-                            )}
+                            <CheckCircle2 className="w-3 h-3" />
                           </button>
                         )}
                       </div>
@@ -921,33 +867,6 @@ Format the response in clean HTML using <p>, <strong>, and <ul> tags. Do not use
                 <div>
                   <div className="flex items-center gap-3">
                     <h2 className="text-3xl font-serif text-islamic-green dark:text-emerald-400">{selectedSurah.englishName}</h2>
-                    {cachedSurahs.includes(selectedSurah.number) ? (
-                      <button 
-                        onClick={() => removeCachedSurah(selectedSurah.number)}
-                        className="p-2 bg-emerald-50 text-emerald-600 rounded-full hover:bg-rose-50 hover:text-rose-600 transition-all"
-                        title="Remove from offline"
-                      >
-                        <CheckCircle2 className="w-5 h-5" />
-                      </button>
-                    ) : (
-                      <button 
-                        onClick={() => downloadSurahAudio(selectedSurah.number)}
-                        className={cn(
-                          "p-2 rounded-full transition-all",
-                          downloadingSurahs[selectedSurah.number]
-                            ? "bg-islamic-green/10 dark:bg-emerald-500/20 text-islamic-green dark:text-emerald-400 animate-pulse"
-                            : "bg-slate-50 dark:bg-slate-800 text-slate-400 hover:bg-islamic-green/10 dark:bg-emerald-500/20 hover:text-islamic-green dark:hover:text-emerald-400"
-                        )}
-                        title="Download for offline"
-                        disabled={downloadingSurahs[selectedSurah.number]}
-                      >
-                        {downloadingSurahs[selectedSurah.number] ? (
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                        ) : (
-                          <Download className="w-5 h-5" />
-                        )}
-                      </button>
-                    )}
                   </div>
                   <p className="text-slate-500 dark:text-slate-400 italic">{selectedSurah.englishNameTranslation} • {selectedSurah.revelationType}</p>
                 </div>

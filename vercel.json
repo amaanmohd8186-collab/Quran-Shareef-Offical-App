@@ -1,10 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/api/ziyarat",
-      "destination": "/api/ziyarat.ts"
-    },
-    {
       "source": "/(.*)",
       "destination": "/"
     }

@@ -22,6 +22,7 @@ export default function HomeView({ setActiveView, language }: HomeViewProps) {
     { id: 'live_ziyarat', label: 'Live Ziyarat', icon: Video, color: 'bg-red-50 text-red-600 dark:bg-red-500/20 dark:text-red-400', desc: 'Live stream from Makkah & Madinah' },
     { id: 'hidayat', label: 'Hidayat', icon: Sparkles, color: 'bg-purple-50 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400', desc: 'Daily guidance and inspiration' },
     { id: 'quiz', label: 'Islamic Quiz', icon: BrainCircuit, color: 'bg-orange-50 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400', desc: 'Test your Islamic knowledge' },
+    { id: 'islamic_quotes', label: 'Islamic Quotes', icon: Quote, color: 'bg-rose-50 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400', desc: 'Inspiring quotes for status' },
     { id: 'settings', label: 'Settings', icon: Settings, color: 'bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-400', desc: 'Manage your preferences' },
   ];
 

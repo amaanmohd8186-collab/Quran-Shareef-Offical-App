@@ -15,6 +15,7 @@ import AsmaUlHusnaView from './components/AsmaUlHusnaView';
 import CalendarView from './components/CalendarView';
 import ZakatCalculatorView from './components/ZakatCalculatorView';
 import IslamicHistoryView from './components/IslamicHistoryView';
+import IslamicQuotesView from './components/IslamicQuotesView';
 import LiveZiyaratView from './components/LiveZiyaratView';
 import { AppView } from './types';
 import { Menu, Volume2, X, Heart, Moon, Sun } from 'lucide-react';
@@ -124,6 +125,8 @@ export default function App() {
         return <IslamicHistoryView />;
       case 'live_ziyarat':
         return <LiveZiyaratView setActiveView={setActiveView} />;
+      case 'islamic_quotes':
+        return <IslamicQuotesView />;
       case 'prayer_alarm':
         return <PrayerAlarmView isAlarmPlaying={isAlarmPlaying} stopAlarm={stopAlarm} />;
       case 'settings':
