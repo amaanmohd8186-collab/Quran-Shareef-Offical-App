@@ -1,5 +1,5 @@
 import React from 'react';
-import { Book, MessageSquare, BrainCircuit, Settings, Moon, Sun, Menu, X, Heart, Compass, Sparkles, Fingerprint, Home, Bell, Calendar as CalendarIcon, Calculator, Video, Users, History as HistoryIcon } from 'lucide-react';
+import { Book, MessageSquare, BrainCircuit, Settings, Moon, Sun, Menu, X, Heart, Compass, Sparkles, Fingerprint, Home, Bell, Calendar as CalendarIcon, Calculator, Video, Users, History as HistoryIcon, Tv, Camera } from 'lucide-react';
 import { AppView } from '../types';
 import { cn } from '../lib/utils';
 import { motion } from 'motion/react';
@@ -31,8 +31,8 @@ export default function Sidebar({ activeView, setActiveView, isOpen, setIsOpen, 
   const menuItems = [
     { id: 'home', label: 'Home', icon: Home },
     { id: 'quran', label: 'Holy Quran', icon: Book },
-    { id: 'islamic_history', label: 'Islamic History', icon: HistoryIcon },
     { id: 'assistant', label: 'Quran AI', icon: MessageSquare },
+    { id: 'islamic_history', label: 'Islamic History', icon: HistoryIcon },
     { id: 'hadith', label: 'Hadith', icon: MessageSquare },
     { id: 'dua', label: 'Duas', icon: Heart },
     { id: 'asma_ul_husna', label: '99 Names', icon: Sparkles },
@@ -80,7 +80,7 @@ export default function Sidebar({ activeView, setActiveView, isOpen, setIsOpen, 
               }}
             />
           </div>
-          <h1 className="text-2xl font-serif font-bold text-islamic-green dark:text-emerald-400 tracking-tight transition-colors">Quran Shareef</h1>
+          <h1 className="text-2xl font-serif font-bold text-islamic-green dark:text-emerald-400 tracking-tight transition-colors">Quran Sharif</h1>
           <button 
             className="lg:hidden ml-auto p-2 text-slate-400 hover:text-islamic-green dark:hover:text-emerald-400 transition-colors"
             onClick={() => setIsOpen(false)}

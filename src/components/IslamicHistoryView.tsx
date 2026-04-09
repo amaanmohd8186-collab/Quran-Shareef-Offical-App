@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { History, BookOpen } from 'lucide-react';
+import { History, BookOpen, ArrowLeft } from 'lucide-react';
+import { AppView } from '../types';
 
 const HISTORY_CONTENT = [
   {
@@ -16,11 +17,22 @@ const HISTORY_CONTENT = [
   }
 ];
 
-export default function IslamicHistoryView() {
+interface IslamicHistoryViewProps {
+  setActiveView: (view: AppView) => void;
+}
+
+export default function IslamicHistoryView({ setActiveView }: IslamicHistoryViewProps) {
   const [currentPage, setCurrentPage] = useState(0);
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8">
+      <button 
+        onClick={() => setActiveView('home')}
+        className="flex items-center gap-2 text-islamic-green dark:text-emerald-400 font-medium hover:underline w-fit"
+      >
+        <ArrowLeft className="w-5 h-5" /> Back to Home
+      </button>
+
       <div className="text-center space-y-4">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-islamic-green/10 dark:bg-emerald-500/20 text-islamic-green dark:text-emerald-400 mb-4">
           <History className="w-8 h-8" />

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Book, MessageSquare, BrainCircuit, Heart, Compass, Sparkles, Fingerprint, Settings, Quote, Calendar as CalendarIcon, Calculator, Video, Users } from 'lucide-react';
+import { Book, MessageSquare, BrainCircuit, Heart, Compass, Sparkles, Fingerprint, Settings, Quote, Calendar as CalendarIcon, Calculator, Video, Users, Tv, Camera } from 'lucide-react';
 import { AppView } from '../types';
 import { motion } from 'motion/react';
 import DailyInspiration from './DailyInspiration';
@@ -12,7 +12,7 @@ interface HomeViewProps {
 export default function HomeView({ setActiveView, language }: HomeViewProps) {
   const features = [
     { id: 'quran', label: 'Holy Quran', icon: Book, color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400', desc: 'Read and listen to the Holy Quran' },
-    { id: 'assistant', label: 'Al-Huda AI', icon: MessageSquare, color: 'bg-blue-50 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400', desc: 'Ask questions about Islam' },
+    { id: 'assistant', label: 'Quran AI', icon: MessageSquare, color: 'bg-blue-50 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400', desc: 'Ask questions about Islam and Quran' },
     { id: 'hadith', label: 'Hadith', icon: Quote, color: 'bg-amber-50 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400', desc: 'Wisdom from the Prophet (PBUH)' },
     { id: 'dua', label: 'Duas', icon: Heart, color: 'bg-pink-50 text-pink-600 dark:bg-pink-500/20 dark:text-pink-400', desc: 'Supplications for every occasion' },
     { id: 'asma_ul_husna', label: '99 Names', icon: Sparkles, color: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400', desc: 'Asma ul Husna with audio' },
@@ -54,9 +54,9 @@ export default function HomeView({ setActiveView, language }: HomeViewProps) {
           />
         </motion.div>
         <div className="space-y-2">
-          <h2 className="text-4xl font-serif font-bold text-islamic-green dark:text-emerald-400 transition-colors">Welcome to Quran Shareef</h2>
+          <h2 className="text-4xl font-serif font-bold text-islamic-green dark:text-emerald-400 transition-colors">Quran Sharif Official App</h2>
           <p className="text-slate-500 dark:text-slate-400 max-w-lg mx-auto italic transition-colors">
-            Your comprehensive Islamic companion with offline voice recitations and spiritual guidance.
+            Official Android Application with offline voice recitations and spiritual guidance.
           </p>
         </div>
       </div>

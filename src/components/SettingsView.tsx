@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Mail, Shield, User, ExternalLink, Coffee, ArrowRight } from 'lucide-react';
+import { Heart, Mail, Shield, User, ExternalLink, Coffee, ArrowRight, ArrowLeft } from 'lucide-react';
 import { AppView } from '../types';
 
 interface SettingsViewProps {
@@ -13,9 +13,16 @@ export default function SettingsView({ setActiveView }: SettingsViewProps) {
 
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-8">
+      <button 
+        onClick={() => setActiveView('home')}
+        className="flex items-center gap-2 text-islamic-green dark:text-emerald-400 font-medium hover:underline w-fit"
+      >
+        <ArrowLeft className="w-5 h-5" /> Back to Home
+      </button>
+
       <div className="text-center space-y-2">
         <h2 className="text-3xl font-serif font-bold text-islamic-green dark:text-emerald-400">Settings & About</h2>
-        <p className="text-slate-500 dark:text-slate-400">Manage your preferences and learn more about Al-Huda.</p>
+        <p className="text-slate-500 dark:text-slate-400">Manage your preferences and learn more about Quran Sharif Official App.</p>
       </div>
 
       {/* Developer Info */}
@@ -39,7 +46,7 @@ export default function SettingsView({ setActiveView }: SettingsViewProps) {
           <Heart className="w-8 h-8 text-islamic-green dark:text-emerald-400 fill-islamic-green/20" />
         </div>
         <div className="space-y-2">
-          <h3 className="text-2xl font-serif font-bold text-islamic-green dark:text-emerald-400">Support Al-Huda</h3>
+          <h3 className="text-2xl font-serif font-bold text-islamic-green dark:text-emerald-400">Support Quran Sharif Official App</h3>
           <p className="text-slate-600 dark:text-slate-400 text-sm max-w-md mx-auto">
             If you find this app helpful, consider supporting its development. Your contributions help keep the app ad-free and updated.
           </p>
@@ -117,7 +124,7 @@ export default function SettingsView({ setActiveView }: SettingsViewProps) {
       </div>
 
       <div className="text-center pt-8">
-        <p className="text-[10px] text-slate-400 uppercase tracking-[0.3em] font-bold">Al-Huda v1.0.0</p>
+        <p className="text-[10px] text-slate-400 uppercase tracking-[0.3em] font-bold">Quran Sharif Official App v1.0.0</p>
       </div>
     </div>
   );

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BookOpen, Loader2, RefreshCcw, Quote, Languages, Play, Pause, Volume2 } from 'lucide-react';
+import { BookOpen, Loader2, RefreshCcw, Quote, Languages, Play, Pause, Volume2, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GoogleGenAI, Modality } from "@google/genai";
+import { AppView } from '../types';
 
 const BILINGUAL_HADITHS = [
   {
@@ -196,7 +197,11 @@ const BILINGUAL_HADITHS = [
   }
 ];
 
-export default function HadithView() {
+interface HadithViewProps {
+  setActiveView: (view: AppView) => void;
+}
+
+export default function HadithView({ setActiveView }: HadithViewProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [loadingAudio, setLoadingAudio] = useState<string | null>(null);
@@ -330,6 +335,13 @@ export default function HadithView() {
 
   return (
     <div className="max-w-4xl mx-auto h-full flex flex-col">
+      <button 
+        onClick={() => setActiveView('home')}
+        className="flex items-center gap-2 text-islamic-green dark:text-emerald-400 font-medium hover:underline w-fit mb-6"
+      >
+        <ArrowLeft className="w-5 h-5" /> Back to Home
+      </button>
+
       <div className="flex items-center justify-between mb-8">
         <div>
           <h2 className="text-4xl font-serif text-islamic-green dark:text-emerald-400">Bilingual Hadith</h2>

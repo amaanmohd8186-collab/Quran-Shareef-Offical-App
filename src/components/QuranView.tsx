@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, BookOpen, ChevronRight, Loader2, Play, Pause, Volume2, SkipBack, SkipForward, Download, CheckCircle2, UserCircle, Languages, X, Youtube, FileText, Bookmark, BookmarkCheck, Heart, Trash2 } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
-import { Surah, SurahDetail, Ayah, Bookmark as BookmarkType } from '../types';
+import { Search, BookOpen, ChevronRight, Loader2, Play, Pause, Volume2, SkipBack, SkipForward, Download, CheckCircle2, UserCircle, Languages, X, FileText, Bookmark, BookmarkCheck, Heart, Trash2, ArrowLeft, MessageSquare } from 'lucide-react';
+import { Surah, SurahDetail, Ayah, Bookmark as BookmarkType, AppView } from '../types';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import surahsData from '../data/surahs.json';
@@ -24,7 +23,21 @@ const TRANSLATIONS = [
   { id: 'bn.bengali', name: 'Bengali (Bengali)' },
 ];
 
-export default function QuranView() {
+const QURAN_COM_RECITATION_IDS: Record<string, number> = {
+  'ar.alafasy': 7,
+  'ar.abdulsamad': 1,
+  'ar.abdurrahmaansudais': 3,
+  'ar.mahermuaiqly': 12,
+  'ar.minshawi': 4,
+  'ar.saoodshuraym': 11,
+  'ar.hudhaify': 6,
+};
+
+interface QuranViewProps {
+  setActiveView: (view: AppView) => void;
+}
+
+export default function QuranView({ setActiveView }: QuranViewProps) {
   const [surahs, setSurahs] = useState<Surah[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -195,27 +208,23 @@ export default function QuranView() {
         }
         setIsTafsirLoading(false);
       } else {
-        // Hindi Tafsir using Gemini Streaming
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-        const prompt = `Provide a short, easy-to-understand Tafsir (explanation) in Hindi for Surah ${surahNum}, Ayah ${ayahNum} of the Quran.
-        
-Arabic: ${text}
-Translation: ${translation}
-
-Format the response in clean HTML using <p>, <strong>, and <ul> tags. Do not use markdown backticks. Make it very fast and concise.`;
-
-        const responseStream = await ai.models.generateContentStream({
-          model: "gemini-3-flash-preview",
-          contents: prompt,
+        // Hindi Tafsir using Backend API (to keep API key secure and avoid Netlify issues)
+        const response = await fetch('/api/tafseer', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ surahNum, ayahNum, text, translation }),
+          signal: tafsirAbortController.current?.signal
         });
 
-        let fullText = '';
-        setIsTafsirLoading(false); // Stop loading spinner as soon as stream starts
-        for await (const chunk of responseStream) {
-          if (tafsirAbortController.current?.signal.aborted) break;
-          fullText += chunk.text;
-          setTafsirContent(fullText.replace(/```/g, ''));
+        if (!response.ok) {
+          throw new Error('Failed to fetch Tafseer');
         }
+
+        const data = await response.json();
+        setTafsirContent(data.tafsir);
+        setIsTafsirLoading(false);
       }
     } catch (err: any) {
       if (err.name !== 'AbortError') {
@@ -397,7 +406,7 @@ Format the response in clean HTML using <p>, <strong>, and <ul> tags. Do not use
       setIsAudioLoading(false);
     };
 
-    audio.onerror = () => {
+    audio.onerror = async () => {
       console.error("Audio Error for URL:", url);
       
       // If CORS failed, remember it and retry without crossOrigin
@@ -416,11 +425,12 @@ Format the response in clean HTML using <p>, <strong>, and <ul> tags. Do not use
                     url.includes('verses.quran.com') ? 4 :
                     url.includes('quranicaudio.com') ? 5 : 6);
 
-      if (stage < 6) {
+      if (stage < 7) {
         // If it's an Ayah audio
         if (context?.surahNum && context?.ayahInSurah) {
           const s = context.surahNum.toString().padStart(3, '0');
           const a = context.ayahInSurah.toString().padStart(3, '0');
+          const ayahKey = `${context.surahNum}:${context.ayahInSurah}`;
 
           if (stage === 1) {
             // Stage 2: Quran.com CDN (Most reliable)
@@ -449,7 +459,20 @@ Format the response in clean HTML using <p>, <strong>, and <ul> tags. Do not use
             const reciter = everyAyahMap[selectedReciter] || 'Alafasy_128kbps';
             fallbackUrl = `https://www.everyayah.com/data/${reciter}/${s}${a}.mp3`;
           } else if (stage === 3) {
-            // Stage 4: Verses.quran.com
+            // Stage 4: EveryAyah Mirror
+            const everyAyahMap: Record<string, string> = {
+              'ar.alafasy': 'Alafasy_128kbps',
+              'ar.hudhaify': 'Hudhaify_128kbps',
+              'ar.minshawi': 'Minshawi_Murattal_128kbps',
+              'ar.abdulsamad': 'Abdul_Basit_Murattal_128kbps',
+              'ar.abdurrahmaansudais': 'Abdurrahmaan_As-Sudais_192kbps',
+              'ar.mahermuaiqly': 'Maher_AlMuaiqly_64kbps',
+              'ar.saoodshuraym': 'Saood_ash-Shuraym_128kbps'
+            };
+            const reciter = everyAyahMap[selectedReciter] || 'Alafasy_128kbps';
+            fallbackUrl = `https://mirrors.quranicaudio.com/everyayah/${reciter}/${s}${a}.mp3`;
+          } else if (stage === 4) {
+            // Stage 5: Verses.quran.com
             const versesMap: Record<string, string> = {
               'ar.alafasy': 'Mishari_Rashid_Al-Afasy',
               'ar.abdulsamad': 'Abdul_Basit_Murattal',
@@ -461,6 +484,20 @@ Format the response in clean HTML using <p>, <strong>, and <ul> tags. Do not use
             };
             const reciter = versesMap[selectedReciter] || 'Mishari_Rashid_Al-Afasy';
             fallbackUrl = `https://verses.quran.com/${reciter}/mp3/${s}${a}.mp3`;
+          } else if (stage === 5 || stage === 6) {
+            // Final Stage: Fetch from Quran.com API
+            const recitationId = QURAN_COM_RECITATION_IDS[selectedReciter] || 7;
+            try {
+              const res = await fetch(`https://api.quran.com/api/v4/recitations/${recitationId}/by_ayah/${ayahKey}`);
+              const data = await res.json();
+              if (data.audio_files && data.audio_files[0] && data.audio_files[0].url) {
+                let finalUrl = data.audio_files[0].url;
+                if (!finalUrl.startsWith('http')) finalUrl = `https:${finalUrl}`;
+                fallbackUrl = finalUrl;
+              }
+            } catch (e) {
+              console.error("Failed to fetch from Quran.com API", e);
+            }
           }
         } 
         // If it's a Surah audio
@@ -599,6 +636,13 @@ Format the response in clean HTML using <p>, <strong>, and <ul> tags. Do not use
             exit={{ opacity: 0, y: -20 }}
             className="flex flex-col space-y-6"
           >
+            <button 
+              onClick={() => setActiveView('home')}
+              className="flex items-center gap-2 text-islamic-green dark:text-emerald-400 font-medium hover:underline w-fit"
+            >
+              <ArrowLeft className="w-5 h-5" /> Back to Home
+            </button>
+
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <h2 className="text-4xl font-serif text-islamic-green dark:text-emerald-400">The Holy Quran</h2>
@@ -704,6 +748,14 @@ Format the response in clean HTML using <p>, <strong>, and <ul> tags. Do not use
                     Juz
                   </button>
                 </div>
+
+                <button 
+                  onClick={() => setActiveView('assistant')}
+                  className="flex items-center gap-2 px-6 py-2 bg-islamic-green/10 text-islamic-green dark:text-emerald-400 border border-islamic-green/20 rounded-full text-sm font-bold hover:bg-islamic-green/20 transition-all shadow-sm"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Quran AI</span>
+                </button>
 
                 <button 
                   onClick={() => setShowBookmarks(true)}
@@ -890,17 +942,6 @@ Format the response in clean HTML using <p>, <strong>, and <ul> tags. Do not use
                     className="w-fit px-4 py-1.5 bg-rose-600 text-white rounded-xl hover:bg-rose-700 transition-all active:scale-95 shadow-sm"
                   >
                     Try Again
-                  </button>
-                  <button 
-                    onClick={() => {
-                      const reciterName = RECITERS.find(r => r.id === selectedReciter)?.name || "";
-                      const query = encodeURIComponent(`Surah ${selectedSurah.englishName} ${reciterName} full recitation`);
-                      window.open(`https://www.youtube.com/results?search_query=${query}`, '_blank');
-                    }}
-                    className="w-fit px-4 py-1.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all active:scale-95 shadow-sm flex items-center gap-2"
-                  >
-                    <Youtube className="w-4 h-4" />
-                    Search on YouTube
                   </button>
                 </div>
               </motion.div>

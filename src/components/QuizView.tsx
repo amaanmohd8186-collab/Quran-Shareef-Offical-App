@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import { ISLAMIC_QUIZ_QUESTIONS } from '../constants';
-import { CheckCircle2, XCircle, RefreshCcw, Trophy, ArrowRight, Lock } from 'lucide-react';
+import { CheckCircle2, XCircle, RefreshCcw, Trophy, ArrowRight, Lock, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import { AppView } from '../types';
 
-export default function QuizView() {
+interface QuizViewProps {
+  setActiveView: (view: AppView) => void;
+}
+
+export default function QuizView({ setActiveView }: QuizViewProps) {
   const [currentLevel, setCurrentLevel] = useState(1);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -103,6 +108,13 @@ export default function QuizView() {
 
   return (
     <div className="max-w-3xl mx-auto h-full flex flex-col">
+      <button 
+        onClick={() => setActiveView('home')}
+        className="flex items-center gap-2 text-islamic-green dark:text-emerald-400 font-medium hover:underline w-fit mb-6"
+      >
+        <ArrowLeft className="w-5 h-5" /> Back to Home
+      </button>
+
       <div className="flex items-center justify-between mb-8">
         <div>
           <h2 className="text-4xl font-serif text-islamic-green dark:text-emerald-400">Level {currentLevel}</h2>

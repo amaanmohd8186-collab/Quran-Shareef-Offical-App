@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, Play, Pause, Volume2 } from 'lucide-react';
+import { Sparkles, Play, Pause, Volume2, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
 import { GoogleGenAI, Modality } from '@google/genai';
+import { AppView } from '../types';
 
 interface Name {
   name: string;
@@ -11,7 +12,11 @@ interface Name {
   };
 }
 
-export default function AsmaUlHusnaView() {
+interface AsmaUlHusnaViewProps {
+  setActiveView: (view: AppView) => void;
+}
+
+export default function AsmaUlHusnaView({ setActiveView }: AsmaUlHusnaViewProps) {
   const [names, setNames] = useState<Name[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -156,6 +161,13 @@ export default function AsmaUlHusnaView() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-12">
+      <button 
+        onClick={() => setActiveView('home')}
+        className="flex items-center gap-2 text-islamic-green dark:text-emerald-400 font-medium hover:underline w-fit"
+      >
+        <ArrowLeft className="w-5 h-5" /> Back to Home
+      </button>
+
       <div className="text-center space-y-4">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-islamic-green/10 dark:bg-emerald-500/20 text-islamic-green dark:text-emerald-400 mb-4">
           <Sparkles className="w-8 h-8" />

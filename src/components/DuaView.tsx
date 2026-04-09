@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Heart, Star, CloudMoon, Sun, ShieldCheck, Search } from 'lucide-react';
+import { Heart, Star, CloudMoon, Sun, ShieldCheck, Search, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import { AppView } from '../types';
 
 const CATEGORIES = ['All', 'Quranic', 'Daily', 'Protection', 'Forgiveness', 'Parents'];
 
@@ -104,7 +105,11 @@ const DUAS = [
   }
 ];
 
-export default function DuaView() {
+interface DuaViewProps {
+  setActiveView: (view: AppView) => void;
+}
+
+export default function DuaView({ setActiveView }: DuaViewProps) {
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -116,6 +121,13 @@ export default function DuaView() {
 
   return (
     <div className="max-w-6xl mx-auto h-full flex flex-col">
+      <button 
+        onClick={() => setActiveView('home')}
+        className="flex items-center gap-2 text-islamic-green dark:text-emerald-400 font-medium hover:underline w-fit mb-6"
+      >
+        <ArrowLeft className="w-5 h-5" /> Back to Home
+      </button>
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div>
           <h2 className="text-4xl font-serif text-islamic-green dark:text-emerald-400">Supplications (Duas)</h2>

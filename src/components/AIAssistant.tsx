@@ -1,16 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
-import { Sparkles, Send, Bot, User } from 'lucide-react';
+import { Sparkles, Send, Bot, User, ArrowLeft, Camera } from 'lucide-react';
 import { motion } from 'motion/react';
+import { AppView } from '../types';
 
-const SYSTEM_INSTRUCTION = `You are a knowledgeable and respectful Islamic AI Assistant. 
-You can answer questions about Islam, the Quran, Hadith, and general Islamic knowledge.
+const SYSTEM_INSTRUCTION = `You are a knowledgeable and respectful Quranic AI Assistant. 
+You can answer questions about the Holy Quran, its verses, Tafsir, and general Islamic knowledge.
 You MUST respond in the same language as the user's query (e.g., if the user asks in Hindi, respond in Hindi; if in English, respond in English; if in Urdu, respond in Urdu, etc.).
-Be polite, accurate, and provide references where possible.`;
+Be polite, accurate, and provide references from the Quran where possible.`;
 
-export default function AIAssistant() {
+interface AIAssistantProps {
+  setActiveView: (view: AppView) => void;
+}
+
+export default function AIAssistant({ setActiveView }: AIAssistantProps) {
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([
-    { role: 'assistant', content: "Assalamu Alaikum! I am your Islamic companion. How can I help you learn more about Islam today? / अस्सलामु अलैकुम! मैं आपका इस्लामी साथी हूँ। आज मैं इस्लाम के बारे में सीखने में आपकी कैसे मदद कर सकता हूँ?" }
+    { role: 'assistant', content: "Assalamu Alaikum! I am your Quran AI Assistant. How can I help you understand the Holy Quran today? / अस्सलामु अलैकुम! मैं आपका कुरान एआई सहायक हूँ। आज मैं पवित्र कुरान को समझने में आपकी कैसे मदद कर सकता हूँ?" }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -49,9 +54,16 @@ export default function AIAssistant() {
 
   return (
     <div className="max-w-4xl mx-auto h-full flex flex-col p-6 space-y-6">
+      <button 
+        onClick={() => setActiveView('home')}
+        className="flex items-center gap-2 text-islamic-green dark:text-emerald-400 font-medium hover:underline w-fit"
+      >
+        <ArrowLeft className="w-5 h-5" /> Back to Home
+      </button>
+
       <div className="flex items-center gap-3 justify-center">
         <Sparkles className="w-8 h-8 text-islamic-gold" />
-        <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-200">Islamic AI Assistant</h1>
+        <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-200">Quran AI Assistant</h1>
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">

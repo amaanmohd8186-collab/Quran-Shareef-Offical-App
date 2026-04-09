@@ -56,3 +56,14 @@ export interface Bookmark {
 }
 
 export type AppView = 'home' | 'quran' | 'assistant' | 'quiz' | 'hadith' | 'dua' | 'hidayat' | 'tasbeeh' | 'settings' | 'prayer_alarm' | 'privacy' | 'asma_ul_husna' | 'calendar' | 'zakat_calculator' | 'islamic_history' | 'live_ziyarat' | 'islamic_quotes';
+
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'a-scene': any;
+      'a-camera': any;
+      'a-entity': any;
+      'a-text': any;
+    }
+  }
+}

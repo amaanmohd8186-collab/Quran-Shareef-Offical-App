@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { RotateCcw, History, Trash2, Volume2, VolumeX, Vibrate, Home } from 'lucide-react';
+import { RotateCcw, History, Trash2, Volume2, VolumeX, Vibrate, Home, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
 import { AppView } from '../types';
@@ -82,6 +82,12 @@ export default function TasbeehView({ setActiveView }: TasbeehViewProps) {
 
   return (
     <div className="max-w-md mx-auto h-full flex flex-col items-center justify-center p-6 bg-slate-100 dark:bg-slate-950">
+      <button 
+        onClick={() => setActiveView('home')}
+        className="self-start flex items-center gap-2 text-islamic-green dark:text-emerald-400 font-medium hover:underline mb-6"
+      >
+        <ArrowLeft className="w-5 h-5" /> Back to Home
+      </button>
       
       {/* Device Body */}
       <div className="relative w-72 h-96 bg-cyan-500 rounded-[3rem] shadow-2xl border-b-8 border-cyan-700 flex flex-col items-center p-6">

@@ -1,10 +1,15 @@
 import React, { useState, useRef } from 'react';
 import { ISLAMIC_QUOTES } from '../constants';
 import { motion } from 'motion/react';
-import { Copy, Check, Download } from 'lucide-react';
+import { Copy, Check, Download, ArrowLeft } from 'lucide-react';
 import { toPng } from 'html-to-image';
+import { AppView } from '../types';
 
-export default function IslamicQuotesView() {
+interface IslamicQuotesViewProps {
+  setActiveView: (view: AppView) => void;
+}
+
+export default function IslamicQuotesView({ setActiveView }: IslamicQuotesViewProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
@@ -32,6 +37,13 @@ export default function IslamicQuotesView() {
 
   return (
     <div className="p-6">
+      <button 
+        onClick={() => setActiveView('home')}
+        className="flex items-center gap-2 text-islamic-green dark:text-emerald-400 font-medium hover:underline w-fit mb-6"
+      >
+        <ArrowLeft className="w-5 h-5" /> Back to Home
+      </button>
+
       <h2 className="text-2xl font-serif font-bold text-islamic-green dark:text-emerald-400 mb-6">
         Islamic Quotes
       </h2>

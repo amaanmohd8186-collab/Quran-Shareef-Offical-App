@@ -25,6 +25,34 @@ const DEFAULT_AZAN_URL = 'https://www.islamcan.com/audio/adhan/azan1.mp3';
 
 export default function App() {
   const [activeView, setActiveView] = useState<AppView>('home');
+
+  // Handle browser back button
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state && event.state.view) {
+        setActiveView(event.state.view);
+      } else {
+        setActiveView('home');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    
+    // Initial state
+    if (!window.history.state) {
+      window.history.replaceState({ view: 'home' }, '');
+    }
+
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const handleViewChange = (view: AppView) => {
+    if (view !== activeView) {
+      window.history.pushState({ view }, '');
+      setActiveView(view);
+    }
+  };
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAlarmPlaying, setIsAlarmPlaying] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -100,41 +128,41 @@ export default function App() {
   const renderView = () => {
     switch (activeView) {
       case 'home':
-        return <HomeView setActiveView={setActiveView} language={language} />;
+        return <HomeView setActiveView={handleViewChange} language={language} />;
       case 'quran':
-        return <QuranView />;
+        return <QuranView setActiveView={handleViewChange} />;
       case 'assistant':
-        return <AIAssistant />;
+        return <AIAssistant setActiveView={handleViewChange} />;
       case 'hadith':
-        return <HadithView />;
+        return <HadithView setActiveView={handleViewChange} />;
       case 'dua':
-        return <DuaView />;
+        return <DuaView setActiveView={handleViewChange} />;
       case 'tasbeeh':
-        return <TasbeehView setActiveView={setActiveView} />;
+        return <TasbeehView setActiveView={handleViewChange} />;
       case 'hidayat':
-        return <HidayatView />;
+        return <HidayatView setActiveView={handleViewChange} />;
       case 'quiz':
-        return <QuizView />;
+        return <QuizView setActiveView={handleViewChange} />;
       case 'asma_ul_husna':
-        return <AsmaUlHusnaView />;
+        return <AsmaUlHusnaView setActiveView={handleViewChange} />;
       case 'calendar':
-        return <CalendarView />;
+        return <CalendarView setActiveView={handleViewChange} />;
       case 'zakat_calculator':
-        return <ZakatCalculatorView />;
+        return <ZakatCalculatorView setActiveView={handleViewChange} />;
       case 'islamic_history':
-        return <IslamicHistoryView />;
+        return <IslamicHistoryView setActiveView={handleViewChange} />;
       case 'live_ziyarat':
-        return <LiveZiyaratView setActiveView={setActiveView} />;
+        return <LiveZiyaratView setActiveView={handleViewChange} />;
       case 'islamic_quotes':
-        return <IslamicQuotesView />;
+        return <IslamicQuotesView setActiveView={handleViewChange} />;
       case 'prayer_alarm':
-        return <PrayerAlarmView isAlarmPlaying={isAlarmPlaying} stopAlarm={stopAlarm} />;
+        return <PrayerAlarmView setActiveView={handleViewChange} isAlarmPlaying={isAlarmPlaying} stopAlarm={stopAlarm} />;
       case 'settings':
-        return <SettingsView setActiveView={setActiveView} />;
+        return <SettingsView setActiveView={handleViewChange} />;
       case 'privacy':
-        return <PrivacyView setActiveView={setActiveView} />;
+        return <PrivacyView setActiveView={handleViewChange} />;
       default:
-        return <HomeView setActiveView={setActiveView} language={language} />;
+        return <HomeView setActiveView={handleViewChange} language={language} />;
     }
   };
 
@@ -168,7 +196,7 @@ export default function App() {
       </AnimatePresence>
       <Sidebar 
         activeView={activeView} 
-        setActiveView={setActiveView} 
+        setActiveView={handleViewChange} 
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
         theme={theme}

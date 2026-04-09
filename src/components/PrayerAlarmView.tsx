@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, BellOff, Volume2, Clock, Trash2, Plus, Check, X, AlertCircle, Upload, Music } from 'lucide-react';
+import { Bell, BellOff, Volume2, Clock, Trash2, Plus, Check, X, AlertCircle, Upload, Music, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import { AppView } from '../types';
 
 interface Alarm {
   id: string;
@@ -21,11 +22,12 @@ const DEFAULT_PRAYERS = [
 ];
 
 interface PrayerAlarmViewProps {
+  setActiveView: (view: AppView) => void;
   isAlarmPlaying?: boolean;
   stopAlarm?: () => void;
 }
 
-export default function PrayerAlarmView({ isAlarmPlaying, stopAlarm }: PrayerAlarmViewProps) {
+export default function PrayerAlarmView({ setActiveView, isAlarmPlaying, stopAlarm }: PrayerAlarmViewProps) {
   const [alarms, setAlarms] = useState<Alarm[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [newName, setNewName] = useState('');
@@ -77,6 +79,13 @@ export default function PrayerAlarmView({ isAlarmPlaying, stopAlarm }: PrayerAla
 
   return (
     <div className="max-w-4xl mx-auto h-full flex flex-col">
+      <button 
+        onClick={() => setActiveView('home')}
+        className="flex items-center gap-2 text-islamic-green dark:text-emerald-400 font-medium hover:underline w-fit mb-6"
+      >
+        <ArrowLeft className="w-5 h-5" /> Back to Home
+      </button>
+
       <div className="flex items-center justify-between mb-12">
         <div>
           <h2 className="text-4xl font-serif text-islamic-green dark:text-emerald-400 flex items-center gap-3">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Loader2, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
+import { AppView } from '../types';
 
 interface HijriDate {
   date: string;
@@ -46,7 +47,11 @@ interface CalendarDay {
   gregorian: GregorianDate;
 }
 
-export default function CalendarView() {
+interface CalendarViewProps {
+  setActiveView: (view: AppView) => void;
+}
+
+export default function CalendarView({ setActiveView }: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarData, setCalendarData] = useState<CalendarDay[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,6 +99,13 @@ export default function CalendarView() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-12">
+      <button 
+        onClick={() => setActiveView('home')}
+        className="flex items-center gap-2 text-islamic-green dark:text-emerald-400 font-medium hover:underline w-fit"
+      >
+        <ArrowLeft className="w-5 h-5" /> Back to Home
+      </button>
+
       <div className="text-center space-y-4">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-islamic-green/10 dark:bg-emerald-500/20 text-islamic-green dark:text-emerald-400 mb-4">
           <CalendarIcon className="w-8 h-8" />

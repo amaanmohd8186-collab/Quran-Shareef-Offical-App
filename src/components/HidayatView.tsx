@@ -1,6 +1,7 @@
 import React from 'react';
-import { Sparkles, Sun, Moon, Shield, Heart, Star } from 'lucide-react';
+import { Sparkles, Sun, Moon, Shield, Heart, Star, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
+import { AppView } from '../types';
 
 const HIDAYAT = [
   {
@@ -33,9 +34,20 @@ const HIDAYAT = [
   }
 ];
 
-export default function HidayatView() {
+interface HidayatViewProps {
+  setActiveView: (view: AppView) => void;
+}
+
+export default function HidayatView({ setActiveView }: HidayatViewProps) {
   return (
     <div className="max-w-5xl mx-auto h-full flex flex-col">
+      <button 
+        onClick={() => setActiveView('home')}
+        className="flex items-center gap-2 text-islamic-green dark:text-emerald-400 font-medium hover:underline w-fit mb-6"
+      >
+        <ArrowLeft className="w-5 h-5" /> Back to Home
+      </button>
+
       <div className="mb-12">
         <h2 className="text-4xl font-serif text-islamic-green dark:text-emerald-400 flex items-center gap-3">
           Hidayat (Guidance) <Sparkles className="w-6 h-6 text-islamic-gold" />
