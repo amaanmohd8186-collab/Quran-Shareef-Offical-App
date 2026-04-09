@@ -176,6 +176,27 @@ export default function ZakatCalculatorView({ setActiveView }: ZakatCalculatorVi
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Only include debts that need to be paid off within the next 12 months.</p>
             </div>
           </div>
+
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-3xl p-6 md:p-8 shadow-sm border border-blue-100 dark:border-blue-800/30">
+            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
+              <Gem className="w-5 h-5 text-blue-500" />
+              Understanding Nisab
+            </h2>
+            <div className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
+              <p>
+                <strong>Nisab</strong> is the minimum amount of wealth a Muslim must possess for a full lunar year before they are obligated to pay Zakat.
+              </p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li><strong>Gold Nisab:</strong> Approximately 85 grams (or 87.48 grams) of pure gold.</li>
+                <li><strong>Silver Nisab:</strong> Approximately 595 grams (or 612.36 grams) of pure silver.</li>
+              </ul>
+              <div className="mt-4 bg-white/60 dark:bg-slate-900/50 p-4 rounded-xl border border-blue-100 dark:border-blue-800/50">
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  <strong>Disclaimer:</strong> These are approximate values. The monetary value of Nisab changes daily based on current market rates for gold and silver. Please consult your local Islamic authorities or scholars for the exact current values in your region.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="space-y-6">
