@@ -13,7 +13,7 @@ async function startServer() {
   const PORT = 3000;
 
   // API routes
-  app.get("/api/live-ziyarat", async (req, res) => {
+  app.get("/.netlify/functions/live-ziyarat", async (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     try {
       // Providing static link to makkahlive.net
@@ -36,10 +36,15 @@ async function startServer() {
     }
   });
 
-  app.post("/api/tafseer", async (req, res) => {
+  app.post("/.netlify/functions/tafseer", async (req, res) => {
     try {
       const { surahNum, ayahNum, text, translation } = req.body;
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+      
+      if (!process.env.GEMINI_API_KEY) {
+        return res.status(500).json({ error: "GEMINI_API_KEY is not set in the environment variables." });
+      }
+
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       const prompt = `Provide a short, easy-to-understand Tafsir (explanation) in Hindi for Surah ${surahNum}, Ayah ${ayahNum} of the Quran.
           
 Arabic: ${text}

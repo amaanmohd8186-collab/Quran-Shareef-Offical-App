@@ -209,7 +209,7 @@ export default function QuranView({ setActiveView }: QuranViewProps) {
         setIsTafsirLoading(false);
       } else {
         // Hindi Tafsir using Backend API (to keep API key secure and avoid Netlify issues)
-        const response = await fetch('/api/tafseer', {
+        const response = await fetch('/.netlify/functions/tafseer', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -218,17 +218,24 @@ export default function QuranView({ setActiveView }: QuranViewProps) {
           signal: tafsirAbortController.current?.signal
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch Tafseer');
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            throw new Error(errorData?.error || 'Failed to fetch Tafseer');
+          }
+          const data = await response.json();
+          setTafsirContent(data.tafsir);
+        } else {
+          const text = await response.text();
+          console.error("Received non-JSON response:", text.substring(0, 100));
+          throw new Error("Received invalid response from server. The API endpoint might be missing or misconfigured.");
         }
-
-        const data = await response.json();
-        setTafsirContent(data.tafsir);
         setIsTafsirLoading(false);
       }
     } catch (err: any) {
       if (err.name !== 'AbortError') {
-        setTafsirError("Could not load Tafsir. Please try again later.");
+        setTafsirError(err.message || "Could not load Tafsir. Please try again later.");
         setIsTafsirLoading(false);
       }
     }

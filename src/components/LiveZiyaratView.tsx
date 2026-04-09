@@ -15,13 +15,20 @@ export default function LiveZiyaratView({ setActiveView }: LiveZiyaratViewProps)
   const fetchStreams = () => {
     setLoading(true);
     setError(null);
-    fetch('/api/live-ziyarat')
+    fetch('/.netlify/functions/live-ziyarat')
       .then(async res => {
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.message || data.error || `Server error: ${res.status}`);
+        const contentType = res.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.message || data.error || `Server error: ${res.status}`);
+          }
+          return data;
+        } else {
+          const text = await res.text();
+          console.error("Received non-JSON response:", text.substring(0, 100));
+          throw new Error("Received invalid response from server. The API endpoint might be missing or misconfigured.");
         }
-        return data;
       })
       .then(data => {
         console.log("Client received data:", data);

@@ -10,10 +10,14 @@ export const handler: Handler = async (event, context) => {
     const { surahNum, ayahNum, text, translation } = JSON.parse(event.body || "{}");
 
     if (!surahNum || !ayahNum) {
-      return { statusCode: 400, body: "Missing parameters" };
+      return { statusCode: 400, body: JSON.stringify({ error: "Missing parameters" }) };
     }
 
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+    if (!process.env.GEMINI_API_KEY) {
+      return { statusCode: 500, body: JSON.stringify({ error: "GEMINI_API_KEY is not set in the environment variables." }) };
+    }
+
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     const prompt = `Provide a short, easy-to-understand Tafsir (explanation) in Hindi for Surah ${surahNum}, Ayah ${ayahNum} of the Quran.
         
 Arabic: ${text}
