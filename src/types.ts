@@ -55,7 +55,7 @@ export interface Bookmark {
   timestamp: number;
 }
 
-export type AppView = 'home' | 'quran' | 'assistant' | 'quiz' | 'hadith' | 'dua' | 'hidayat' | 'tasbeeh' | 'settings' | 'prayer_alarm' | 'privacy' | 'asma_ul_husna' | 'calendar' | 'zakat_calculator' | 'islamic_history' | 'live_ziyarat' | 'islamic_quotes' | 'namaz_times' | 'qibla' | 'hifz_detector' | 'nasheed_player';
+export type AppView = 'home' | 'quran' | 'assistant' | 'quiz' | 'hadith' | 'dua' | 'hidayat' | 'tasbeeh' | 'settings' | 'prayer_alarm' | 'privacy' | 'asma_ul_husna' | 'calendar' | 'zakat_calculator' | 'islamic_history' | 'live_ziyarat' | 'islamic_quotes' | 'namaz_times' | 'qibla' | 'hifz_detector';
 
 declare global {
   namespace JSX {

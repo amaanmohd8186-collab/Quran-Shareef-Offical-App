@@ -27,7 +27,6 @@ export default function HomeView({ setActiveView, language }: HomeViewProps) {
     { id: 'namaz_times', label: 'Namaz Times', icon: Clock, color: 'bg-lime-50 text-lime-600 dark:bg-lime-500/20 dark:text-lime-400', desc: 'Daily prayer timings' },
     { id: 'qibla', label: 'Qibla Finder', icon: Compass, color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400', desc: 'Find Qibla direction' },
     { id: 'hifz_detector', label: 'Hifz Detector', icon: Camera, color: 'bg-violet-50 text-violet-600 dark:bg-violet-500/20 dark:text-violet-400', desc: 'Practice Hifz with AI' },
-    { id: 'nasheed_player', label: 'Nasheed Player', icon: Music, color: 'bg-fuchsia-50 text-fuchsia-600 dark:bg-fuchsia-500/20 dark:text-fuchsia-400', desc: 'Listen to Nasheeds' },
     { id: 'islamic_history', label: 'Islamic History', icon: History, color: 'bg-amber-50 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400', desc: 'Learn Islamic history' },
     { id: 'privacy', label: 'Privacy Policy', icon: Shield, color: 'bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-400', desc: 'View privacy policy' },
     { id: 'settings', label: 'Settings', icon: Settings, color: 'bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-400', desc: 'Manage your preferences' },
