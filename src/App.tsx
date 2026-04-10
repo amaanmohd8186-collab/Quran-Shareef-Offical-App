@@ -17,6 +17,10 @@ import ZakatCalculatorView from './components/ZakatCalculatorView';
 import IslamicHistoryView from './components/IslamicHistoryView';
 import IslamicQuotesView from './components/IslamicQuotesView';
 import LiveZiyaratView from './components/LiveZiyaratView';
+import NamazTimesView from './components/NamazTimesView';
+import QiblaView from './components/QiblaView';
+import HifzDetectorView from './components/HifzDetectorView';
+import NasheedPlayerView from './components/NasheedPlayerView';
 import { AppView } from './types';
 import { Menu, Volume2, X, Heart, Moon, Sun } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -25,6 +29,8 @@ const DEFAULT_AZAN_URL = 'https://www.islamcan.com/audio/adhan/azan1.mp3';
 
 export default function App() {
   const [activeView, setActiveView] = useState<AppView>('home');
+  const [quranScrollPos, setQuranScrollPos] = useState(0);
+  const [isQuranSearchMode, setIsQuranSearchMode] = useState(false);
 
   // Handle browser back button
   useEffect(() => {
@@ -130,7 +136,15 @@ export default function App() {
       case 'home':
         return <HomeView setActiveView={handleViewChange} language={language} />;
       case 'quran':
-        return <QuranView setActiveView={handleViewChange} />;
+        return (
+          <QuranView 
+            setActiveView={handleViewChange} 
+            scrollPos={quranScrollPos} 
+            setScrollPos={setQuranScrollPos}
+            isSearchMode={isQuranSearchMode}
+            setIsSearchMode={setIsQuranSearchMode}
+          />
+        );
       case 'assistant':
         return <AIAssistant setActiveView={handleViewChange} />;
       case 'hadith':
@@ -153,6 +167,14 @@ export default function App() {
         return <IslamicHistoryView setActiveView={handleViewChange} />;
       case 'live_ziyarat':
         return <LiveZiyaratView setActiveView={handleViewChange} />;
+      case 'namaz_times':
+        return <NamazTimesView setActiveView={handleViewChange} />;
+      case 'qibla':
+        return <QiblaView setActiveView={handleViewChange} />;
+      case 'hifz_detector':
+        return <HifzDetectorView setActiveView={handleViewChange} />;
+      case 'nasheed_player':
+        return <NasheedPlayerView setActiveView={handleViewChange} />;
       case 'islamic_quotes':
         return <IslamicQuotesView setActiveView={handleViewChange} />;
       case 'prayer_alarm':

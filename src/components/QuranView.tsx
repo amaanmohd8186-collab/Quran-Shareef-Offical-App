@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, BookOpen, ChevronRight, Loader2, Play, Pause, Volume2, SkipBack, SkipForward, Download, CheckCircle2, UserCircle, Languages, X, FileText, Bookmark, BookmarkCheck, Heart, Trash2, ArrowLeft, MessageSquare } from 'lucide-react';
 import { Surah, SurahDetail, Ayah, Bookmark as BookmarkType, AppView } from '../types';
-import { cn } from '../lib/utils';
+import { cn, toArabicNumerals } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import surahsData from '../data/surahs.json';
 
@@ -35,13 +35,30 @@ const QURAN_COM_RECITATION_IDS: Record<string, number> = {
 
 interface QuranViewProps {
   setActiveView: (view: AppView) => void;
+  scrollPos: number;
+  setScrollPos: (pos: number) => void;
+  isSearchMode: boolean;
+  setIsSearchMode: (mode: boolean) => void;
 }
 
-export default function QuranView({ setActiveView }: QuranViewProps) {
+export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSearchMode, setIsSearchMode }: QuranViewProps) {
   const [surahs, setSurahs] = useState<Surah[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSurah, setSelectedSurah] = useState<SurahDetail | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    if (containerRef.current && scrollPos > 0) {
+      containerRef.current.scrollTop = scrollPos;
+    }
+  }, []);
+
+  const handleScroll = () => {
+    if (containerRef.current) {
+      setScrollPos(containerRef.current.scrollTop);
+    }
+  };
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [viewMode, setViewMode] = useState<'surah' | 'juz'>('surah');
   const [cachedSurahs, setCachedSurahs] = useState<number[]>([]);
@@ -65,11 +82,35 @@ export default function QuranView({ setActiveView }: QuranViewProps) {
   
   // Audio State
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
   const [activeAyahNumber, setActiveAyahNumber] = useState<number | null>(null);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const updateTime = () => setCurrentTime(audio.currentTime);
+    const updateDuration = () => setDuration(audio.duration);
+
+    audio.addEventListener('timeupdate', updateTime);
+    audio.addEventListener('loadedmetadata', updateDuration);
+
+    return () => {
+      audio.removeEventListener('timeupdate', updateTime);
+      audio.removeEventListener('loadedmetadata', updateDuration);
+    };
+  }, [currentAudioUrl]);
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
   
   const CACHE_NAME = 'quran-audio-cache-v1';
 
@@ -633,7 +674,7 @@ export default function QuranView({ setActiveView }: QuranViewProps) {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" ref={containerRef} onScroll={handleScroll}>
       <AnimatePresence mode="wait">
         {!selectedSurah ? (
           <motion.div 
@@ -790,16 +831,31 @@ export default function QuranView({ setActiveView }: QuranViewProps) {
                   </button>
                 )}
 
-                <div className="relative group">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-islamic-green dark:text-emerald-400 transition-colors" />
-                  <input 
-                    type="text" 
-                    placeholder={viewMode === 'surah' ? "Search Surah..." : "Search Juz..."}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-islamic-green/20 dark:focus:ring-emerald-500/20 focus:border-islamic-green dark:focus:border-emerald-500 transition-all w-full md:w-64"
-                  />
-                </div>
+                <button 
+                  onClick={() => setIsSearchMode(!isSearchMode)}
+                  className={cn(
+                    "flex items-center gap-2 px-6 py-2 rounded-full text-sm font-bold transition-all shadow-sm",
+                    isSearchMode 
+                      ? "bg-islamic-green text-white" 
+                      : "bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  )}
+                >
+                  <Search className="w-4 h-4" />
+                  <span>Search</span>
+                </button>
+
+                {isSearchMode && (
+                  <div className="relative group w-full md:w-64">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-islamic-green dark:text-emerald-400 transition-colors" />
+                    <input 
+                      type="text" 
+                      placeholder={viewMode === 'surah' ? "Search Surah..." : "Search Juz..."}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-islamic-green/20 dark:focus:ring-emerald-500/20 focus:border-islamic-green dark:focus:border-emerald-500 transition-all w-full"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -978,7 +1034,7 @@ export default function QuranView({ setActiveView }: QuranViewProps) {
                           "w-8 h-8 rounded-full border flex items-center justify-center text-[10px] font-bold transition-colors",
                           activeAyahNumber === ayah.number ? "bg-islamic-green text-white border-islamic-green" : "border-islamic-green/20 text-islamic-green dark:text-emerald-400"
                         )}>
-                          {ayah.numberInSurah}
+                          {toArabicNumerals(ayah.numberInSurah)}
                         </div>
                         <button 
                           onClick={(e) => {
@@ -1001,6 +1057,19 @@ export default function QuranView({ setActiveView }: QuranViewProps) {
                             activeAyahNumber === ayah.number && isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />
                           )}
                         </button>
+                        {activeAyahNumber === ayah.number && (
+                          <div className="flex flex-col items-center gap-1 mt-2 w-full">
+                            <div className="w-full h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-islamic-green dark:bg-emerald-400 transition-all duration-100"
+                                style={{ width: `${(currentTime / duration) * 100}%` }}
+                              />
+                            </div>
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                              {formatTime(currentTime)} / {formatTime(duration)}
+                            </span>
+                          </div>
+                        )}
                         <button
                           onClick={(e) => {
                             e.stopPropagation();

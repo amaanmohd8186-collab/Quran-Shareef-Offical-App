@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
-import { Sparkles, Send, Bot, User, ArrowLeft, Camera } from 'lucide-react';
+import { Sparkles, Send, Bot, User, ArrowLeft, Wifi, WifiOff } from 'lucide-react';
 import { motion } from 'motion/react';
 import { AppView } from '../types';
+import islamicQuestions from '../data/islamicQuestions.json';
 
 const SYSTEM_INSTRUCTION = `You are a knowledgeable and respectful Quranic AI Assistant. 
 You can answer questions about the Holy Quran, its verses, Tafsir, and general Islamic knowledge.
@@ -15,10 +16,11 @@ interface AIAssistantProps {
 
 export default function AIAssistant({ setActiveView }: AIAssistantProps) {
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([
-    { role: 'assistant', content: "Assalamu Alaikum! I am your Quran AI Assistant. How can I help you understand the Holy Quran today? / अस्सलामु अलैकुम! मैं आपका कुरान एआई सहायक हूँ। आज मैं पवित्र कुरान को समझने में आपकी कैसे मदद कर सकता हूँ?" }
+    { role: 'assistant', content: "Assalamu Alaikum! I am your Quran AI Assistant. You can use Offline Mode for common questions or switch to Live Mode for complex queries. How can I help you today?" }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLiveMode, setIsLiveMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -33,23 +35,42 @@ export default function AIAssistant({ setActiveView }: AIAssistantProps) {
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
 
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-      const response: GenerateContentResponse = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: userMessage,
-        config: {
-          systemInstruction: SYSTEM_INSTRUCTION,
-        },
-      });
+    if (isLiveMode) {
+      try {
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+        const response: GenerateContentResponse = await ai.models.generateContent({
+          model: "gemini-3-flash-preview",
+          contents: userMessage,
+          config: {
+            systemInstruction: SYSTEM_INSTRUCTION,
+          },
+        });
 
-      setMessages(prev => [...prev, { role: 'assistant', content: response.text || "Sorry, I couldn't understand that." }]);
-    } catch (error) {
-      console.error('AI Error:', error);
-      setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I encountered an error. Please try again later." }]);
-    } finally {
-      setIsLoading(false);
+        setMessages(prev => [...prev, { role: 'assistant', content: response.text || "Sorry, I couldn't understand that." }]);
+      } catch (error) {
+        console.error('AI Error:', error);
+        setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I encountered an error. Please try again later." }]);
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // Offline Mode
+      const lowerInput = userMessage.toLowerCase();
+      const found = islamicQuestions.find(q => 
+        lowerInput.includes(q.question.toLowerCase()) || 
+        q.question.toLowerCase().includes(lowerInput)
+      );
+      const response = found ? found.answer : "I'm sorry, I don't have an answer for that in Offline Mode. Please try switching to Live Mode for more complex questions.";
+      
+      setTimeout(() => {
+        setMessages(prev => [...prev, { role: 'assistant', content: response }]);
+        setIsLoading(false);
+      }, 500);
     }
+  };
+
+  const startTilawatCorrection = () => {
+    setMessages(prev => [...prev, { role: 'assistant', content: "Tilawat Correction Tool: Please record your Tilawat. (Note: This feature requires integration with a Speech-to-Text engine, which is currently a placeholder.)" }]);
   };
 
   return (
@@ -61,9 +82,26 @@ export default function AIAssistant({ setActiveView }: AIAssistantProps) {
         <ArrowLeft className="w-5 h-5" /> Back to Home
       </button>
 
-      <div className="flex items-center gap-3 justify-center">
-        <Sparkles className="w-8 h-8 text-islamic-gold" />
-        <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-200">Quran AI Assistant</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Sparkles className="w-8 h-8 text-islamic-gold" />
+          <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-200">Quran AI Assistant</h1>
+        </div>
+        <div className="flex gap-2">
+          <button 
+            onClick={startTilawatCorrection}
+            className="px-4 py-2 bg-islamic-gold text-white rounded-full font-bold text-sm hover:bg-amber-600 transition-all"
+          >
+            Tilawat Correction
+          </button>
+          <button 
+            onClick={() => setIsLiveMode(!isLiveMode)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm transition-all ${isLiveMode ? 'bg-rose-500 text-white' : 'bg-islamic-green text-white'}`}
+          >
+            {isLiveMode ? <Wifi className="w-4 h-4" /> : <WifiOff className="w-4 h-4" />}
+            {isLiveMode ? 'Live Mode' : 'Offline Mode'}
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">

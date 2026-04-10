@@ -41,19 +41,24 @@ export default function PrivacyView({ setActiveView }: PrivacyViewProps) {
         </section>
 
         <section className="space-y-4">
-          <h3 className="text-xl font-bold text-islamic-green dark:text-emerald-400">2. No Permissions Required</h3>
+          <h3 className="text-xl font-bold text-islamic-green dark:text-emerald-400">2. Permissions Required</h3>
           <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-            This application does not require or request any sensitive device permissions. We do not access your:
+            This application requires certain device permissions to provide specific features. We access your:
           </p>
           <ul className="list-disc list-inside text-slate-600 dark:text-slate-400 space-y-2 ml-4">
-            <li>Location or GPS</li>
-            <li>Camera or Microphone</li>
+            <li>Location or GPS (for Prayer Times and Qibla Finder)</li>
+            <li>Camera or Microphone (for Hifz Detector)</li>
+          </ul>
+          <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+            We do not access your:
+          </p>
+          <ul className="list-disc list-inside text-slate-600 dark:text-slate-400 space-y-2 ml-4">
             <li>Contacts or Calendar</li>
             <li>Device Storage or Files</li>
             <li>Google Drive or Cloud Storage</li>
           </ul>
           <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-            The app operates entirely without accessing your private device data.
+            These permissions are used solely to enhance your experience within the app.
           </p>
         </section>
 
@@ -67,8 +72,12 @@ export default function PrivacyView({ setActiveView }: PrivacyViewProps) {
         <section className="space-y-4">
           <h3 className="text-xl font-bold text-islamic-green dark:text-emerald-400">4. AI Assistant Privacy</h3>
           <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-            The Quran AI Assistant processes your queries in real-time. We do not store your chat history or use your interactions for any purpose other than providing immediate answers.
+            Our AI Assistant offers two modes:
           </p>
+          <ul className="list-disc list-inside text-slate-600 dark:text-slate-400 space-y-2 ml-4">
+            <li><strong>Offline Mode:</strong> Your questions are processed entirely on your device using a pre-loaded database. No data is ever transmitted.</li>
+            <li><strong>Live Mode:</strong> If you choose to use Live Mode for more complex questions, your query is sent to Google's Gemini API to generate a response. We do not store your chat history or use your interactions for any purpose other than providing immediate answers.</li>
+          </ul>
         </section>
 
         <section className="space-y-4">

@@ -3,6 +3,7 @@ import { Sparkles, Play, Pause, Volume2, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
 import { GoogleGenAI, Modality } from '@google/genai';
 import { AppView } from '../types';
+import { toArabicNumerals } from '../lib/utils';
 
 interface Name {
   name: string;
@@ -96,7 +97,14 @@ export default function AsmaUlHusnaView({ setActiveView }: AsmaUlHusnaViewProps)
         },
       });
 
-      const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+      let base64Audio = null;
+      for (const part of response.candidates?.[0]?.content?.parts || []) {
+        if (part.inlineData && part.inlineData.data) {
+          base64Audio = part.inlineData.data;
+          break;
+        }
+      }
+
       if (base64Audio) {
         const binaryString = window.atob(base64Audio);
         const len = binaryString.length;
@@ -191,7 +199,7 @@ export default function AsmaUlHusnaView({ setActiveView }: AsmaUlHusnaViewProps)
             
             <div className="flex justify-between items-start mb-4">
               <span className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold text-sm">
-                {index + 1}
+                {toArabicNumerals(index + 1)}
               </span>
               <button
                 onClick={() => playAudio(index + 1, name.name)}

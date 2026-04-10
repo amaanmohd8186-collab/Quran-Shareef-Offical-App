@@ -3,6 +3,7 @@ import { Bell, BellOff, Volume2, Clock, Trash2, Plus, Check, X, AlertCircle, Upl
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { AppView } from '../types';
+import { requestNotificationPermission, sendNotification } from '../lib/notifications';
 
 interface Alarm {
   id: string;
@@ -34,6 +35,7 @@ export default function PrayerAlarmView({ setActiveView, isAlarmPlaying, stopAla
   const [newTime, setNewTime] = useState('12:00');
 
   useEffect(() => {
+    requestNotificationPermission();
     const saved = localStorage.getItem('prayer_alarms');
     
     if (saved) {
@@ -49,6 +51,21 @@ export default function PrayerAlarmView({ setActiveView, isAlarmPlaying, stopAla
       localStorage.setItem('prayer_alarms', JSON.stringify(initial));
     }
   }, []);
+
+  useEffect(() => {
+    const checkAlarms = () => {
+      const now = new Date();
+      const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      
+      alarms.forEach(alarm => {
+        if (alarm.enabled && alarm.time === currentTime) {
+          sendNotification("Prayer Time!", `It's time for ${alarm.name}`);
+        }
+      });
+    };
+    const interval = setInterval(checkAlarms, 60000);
+    return () => clearInterval(interval);
+  }, [alarms]);
 
   const toggleAlarm = (id: string) => {
     const updated = alarms.map(a => a.id === id ? { ...a, enabled: !a.enabled } : a);

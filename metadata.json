@@ -2,5 +2,5 @@
   "name": "Quran Sharif Official App",
   "description": "The official Quran Sharif application for Android. Features high-quality recitations, offline audio, prayer alarms, and comprehensive Islamic tools.",
   "icon": "/app-logo.jpg",
-  "requestFramePermissions": []
+  "requestFramePermissions": ["geolocation", "microphone"]
 }

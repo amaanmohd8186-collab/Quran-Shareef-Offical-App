@@ -1,5 +1,5 @@
 import React from 'react';
-import { Book, MessageSquare, BrainCircuit, Heart, Compass, Sparkles, Fingerprint, Settings, Quote, Calendar as CalendarIcon, Calculator, Video, Users, Tv, Camera } from 'lucide-react';
+import { Book, MessageSquare, BrainCircuit, Heart, Compass, Sparkles, Fingerprint, Settings, Quote, Calendar as CalendarIcon, Calculator, Video, Users, Tv, Camera, AlarmClock, History, Clock, Music, Shield } from 'lucide-react';
 import { AppView } from '../types';
 import { motion } from 'motion/react';
 import DailyInspiration from './DailyInspiration';
@@ -23,6 +23,13 @@ export default function HomeView({ setActiveView, language }: HomeViewProps) {
     { id: 'hidayat', label: 'Hidayat', icon: Sparkles, color: 'bg-purple-50 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400', desc: 'Daily guidance and inspiration' },
     { id: 'quiz', label: 'Islamic Quiz', icon: BrainCircuit, color: 'bg-orange-50 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400', desc: 'Test your Islamic knowledge' },
     { id: 'islamic_quotes', label: 'Islamic Quotes', icon: Quote, color: 'bg-rose-50 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400', desc: 'Inspiring quotes for status' },
+    { id: 'prayer_alarm', label: 'Prayer Alarm', icon: AlarmClock, color: 'bg-sky-50 text-sky-600 dark:bg-sky-500/20 dark:text-sky-400', desc: 'Set prayer reminders' },
+    { id: 'namaz_times', label: 'Namaz Times', icon: Clock, color: 'bg-lime-50 text-lime-600 dark:bg-lime-500/20 dark:text-lime-400', desc: 'Daily prayer timings' },
+    { id: 'qibla', label: 'Qibla Finder', icon: Compass, color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400', desc: 'Find Qibla direction' },
+    { id: 'hifz_detector', label: 'Hifz Detector', icon: Camera, color: 'bg-violet-50 text-violet-600 dark:bg-violet-500/20 dark:text-violet-400', desc: 'Practice Hifz with AI' },
+    { id: 'nasheed_player', label: 'Nasheed Player', icon: Music, color: 'bg-fuchsia-50 text-fuchsia-600 dark:bg-fuchsia-500/20 dark:text-fuchsia-400', desc: 'Listen to Nasheeds' },
+    { id: 'islamic_history', label: 'Islamic History', icon: History, color: 'bg-amber-50 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400', desc: 'Learn Islamic history' },
+    { id: 'privacy', label: 'Privacy Policy', icon: Shield, color: 'bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-400', desc: 'View privacy policy' },
     { id: 'settings', label: 'Settings', icon: Settings, color: 'bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-400', desc: 'Manage your preferences' },
   ];
 
