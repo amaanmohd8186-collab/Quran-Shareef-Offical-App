@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { BookOpen, Loader2, RefreshCcw, Quote, Languages, Play, Pause, Volume2, ArrowLeft } from 'lucide-react';
+import React, { useState } from 'react';
+import { BookOpen, RefreshCcw, Quote, Languages, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { GoogleGenAI, Modality } from "@google/genai";
 import { AppView } from '../types';
 
 const BILINGUAL_HADITHS = [
@@ -204,126 +203,8 @@ interface HadithViewProps {
 export default function HadithView({ setActiveView }: HadithViewProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [loadingAudio, setLoadingAudio] = useState<string | null>(null);
-  const [playingLang, setPlayingLang] = useState<'en' | 'hi' | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const createWavHeader = (dataLength: number, sampleRate: number = 24000) => {
-    const buffer = new ArrayBuffer(44);
-    const view = new DataView(buffer);
-
-    const writeString = (view: DataView, offset: number, string: string) => {
-      for (let i = 0; i < string.length; i++) {
-        view.setUint8(offset + i, string.charCodeAt(i));
-      }
-    };
-
-    writeString(view, 0, 'RIFF');
-    view.setUint32(4, 36 + dataLength, true);
-    writeString(view, 8, 'WAVE');
-    writeString(view, 12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, 1, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * 2, true);
-    view.setUint16(32, 2, true);
-    view.setUint16(34, 16, true);
-    writeString(view, 36, 'data');
-    view.setUint32(40, dataLength, true);
-
-    return buffer;
-  };
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (audio) {
-      const handleEnd = () => {
-        setPlayingLang(null);
-        if (audio.src.startsWith('blob:')) {
-          URL.revokeObjectURL(audio.src);
-        }
-      };
-      audio.addEventListener('ended', handleEnd);
-      return () => {
-        audio.removeEventListener('ended', handleEnd);
-        if (audio.src.startsWith('blob:')) {
-          URL.revokeObjectURL(audio.src);
-        }
-      };
-    }
-  }, []);
-
-  const playHadithAudio = async (text: string, lang: 'en' | 'hi') => {
-    if (playingLang === lang) {
-      audioRef.current?.pause();
-      setPlayingLang(null);
-      return;
-    }
-
-    setLoadingAudio(lang);
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const prompt = lang === 'en' ? `Say clearly: ${text}` : `Say clearly in Hindi: ${text}`;
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash-preview-tts",
-        contents: [{ parts: [{ text: prompt }] }],
-        config: {
-          responseModalities: [Modality.AUDIO],
-          speechConfig: {
-            voiceConfig: {
-              prebuiltVoiceConfig: { voiceName: lang === 'en' ? 'Kore' : 'Puck' },
-            },
-          },
-        },
-      });
-
-      const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-      if (base64Audio) {
-        // Convert base64 to Uint8Array
-        const binaryString = window.atob(base64Audio);
-        const len = binaryString.length;
-        const bytes = new Uint8Array(len);
-        for (let i = 0; i < len; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-        
-        // Wrap raw PCM in WAV container
-        const wavHeader = createWavHeader(len, 24000);
-        const wavBlob = new Blob([wavHeader, bytes], { type: 'audio/wav' });
-        const audioUrl = URL.createObjectURL(wavBlob);
-        
-        if (audioRef.current) {
-          if (audioRef.current.src.startsWith('blob:')) {
-            URL.revokeObjectURL(audioRef.current.src);
-          }
-          audioRef.current.onerror = (e) => {
-            console.error("Hadith Audio Error:", e);
-            setPlayingLang(null);
-            setLoadingAudio(null);
-          };
-          audioRef.current.src = audioUrl;
-          audioRef.current.play().catch(err => {
-            console.error("Hadith Play Error:", err);
-            setPlayingLang(null);
-          });
-          setPlayingLang(lang);
-        }
-      } else {
-        console.error("No audio data received from Gemini TTS");
-      }
-    } catch (error) {
-      console.error("Audio error:", error);
-    } finally {
-      setLoadingAudio(null);
-    }
-  };
 
   const nextHadith = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      setPlayingLang(null);
-    }
     setLoading(true);
     setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % BILINGUAL_HADITHS.length);
@@ -375,19 +256,6 @@ export default function HadithView({ setActiveView }: HadithViewProps) {
                     <Languages className="w-4 h-4" />
                     <span className="text-[10px] font-bold uppercase tracking-widest">English</span>
                   </div>
-                  <button 
-                    onClick={() => playHadithAudio(currentHadith.en, 'en')}
-                    disabled={loadingAudio !== null && loadingAudio !== 'en'}
-                    className="p-2 bg-islamic-green/5 dark:bg-emerald-500/10 text-islamic-green dark:text-emerald-400 rounded-full hover:bg-islamic-green/10 dark:bg-emerald-500/20 transition-all disabled:opacity-50"
-                  >
-                    {loadingAudio === 'en' ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : playingLang === 'en' ? (
-                      <Pause className="w-4 h-4" />
-                    ) : (
-                      <Play className="w-4 h-4" />
-                    )}
-                  </button>
                 </div>
                 <h3 className="text-2xl font-serif text-slate-800 dark:text-slate-200 leading-relaxed italic">
                   "{currentHadith.en}"
@@ -404,19 +272,6 @@ export default function HadithView({ setActiveView }: HadithViewProps) {
                     <Languages className="w-4 h-4" />
                     <span className="text-[10px] font-bold uppercase tracking-widest">Hindi • हिंदी</span>
                   </div>
-                  <button 
-                    onClick={() => playHadithAudio(currentHadith.hi, 'hi')}
-                    disabled={loadingAudio !== null && loadingAudio !== 'hi'}
-                    className="p-2 bg-islamic-green/10 dark:bg-emerald-500/20 text-islamic-green dark:text-emerald-400 rounded-full hover:bg-islamic-green/20 transition-all disabled:opacity-50"
-                  >
-                    {loadingAudio === 'hi' ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : playingLang === 'hi' ? (
-                      <Pause className="w-4 h-4" />
-                    ) : (
-                      <Play className="w-4 h-4" />
-                    )}
-                  </button>
                 </div>
                 <h3 className="text-2xl font-serif text-islamic-green dark:text-emerald-400 leading-relaxed italic">
                   "{currentHadith.hi}"
@@ -431,7 +286,6 @@ export default function HadithView({ setActiveView }: HadithViewProps) {
           </motion.div>
         </AnimatePresence>
       </div>
-      <audio ref={audioRef} className="hidden" />
     </div>
   );
 }

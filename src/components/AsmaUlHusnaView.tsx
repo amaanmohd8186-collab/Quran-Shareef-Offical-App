@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, Play, Pause, Volume2, ArrowLeft } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sparkles, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
-import { GoogleGenAI, Modality } from '@google/genai';
 import { AppView } from '../types';
 import { toArabicNumerals } from '../lib/utils';
 
@@ -21,36 +20,6 @@ export default function AsmaUlHusnaView({ setActiveView }: AsmaUlHusnaViewProps)
   const [names, setNames] = useState<Name[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [playingId, setPlayingId] = useState<number | null>(null);
-  const [loadingAudioId, setLoadingAudioId] = useState<number | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const createWavHeader = (dataLength: number, sampleRate: number = 24000) => {
-    const buffer = new ArrayBuffer(44);
-    const view = new DataView(buffer);
-
-    const writeString = (view: DataView, offset: number, string: string) => {
-      for (let i = 0; i < string.length; i++) {
-        view.setUint8(offset + i, string.charCodeAt(i));
-      }
-    };
-
-    writeString(view, 0, 'RIFF');
-    view.setUint32(4, 36 + dataLength, true);
-    writeString(view, 8, 'WAVE');
-    writeString(view, 12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, 1, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * 2, true);
-    view.setUint16(32, 2, true);
-    view.setUint16(34, 16, true);
-    writeString(view, 36, 'data');
-    view.setUint32(40, dataLength, true);
-
-    return buffer;
-  };
 
   useEffect(() => {
     fetch('https://api.aladhan.com/v1/asmaAlHusna')
@@ -64,92 +33,6 @@ export default function AsmaUlHusnaView({ setActiveView }: AsmaUlHusnaViewProps)
         setLoading(false);
       });
   }, []);
-
-  const playAudio = async (number: number, nameText: string) => {
-    if (playingId === number) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-      setPlayingId(null);
-      return;
-    }
-    
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
-
-    setLoadingAudioId(number);
-    setPlayingId(null);
-    
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const prompt = `Say clearly in Arabic: ${nameText}`;
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash-preview-tts",
-        contents: [{ parts: [{ text: prompt }] }],
-        config: {
-          responseModalities: [Modality.AUDIO],
-          speechConfig: {
-            voiceConfig: {
-              prebuiltVoiceConfig: { voiceName: 'Kore' },
-            },
-          },
-        },
-      });
-
-      let base64Audio = null;
-      for (const part of response.candidates?.[0]?.content?.parts || []) {
-        if (part.inlineData && part.inlineData.data) {
-          base64Audio = part.inlineData.data;
-          break;
-        }
-      }
-
-      if (base64Audio) {
-        const binaryString = window.atob(base64Audio);
-        const len = binaryString.length;
-        const bytes = new Uint8Array(len);
-        for (let i = 0; i < len; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-        
-        const wavHeader = createWavHeader(len, 24000);
-        const wavBlob = new Blob([wavHeader, bytes], { type: 'audio/wav' });
-        const audioUrl = URL.createObjectURL(wavBlob);
-        
-        if (!audioRef.current) {
-          audioRef.current = new Audio();
-        }
-        
-        if (audioRef.current.src.startsWith('blob:')) {
-          URL.revokeObjectURL(audioRef.current.src);
-        }
-        
-        audioRef.current.onerror = (e) => {
-          console.error("Asma Ul Husna Audio Error:", e);
-          setPlayingId(null);
-          setLoadingAudioId(null);
-        };
-        
-        audioRef.current.onended = () => {
-          setPlayingId(null);
-        };
-        
-        audioRef.current.src = audioUrl;
-        audioRef.current.play().catch(err => {
-          console.error("Asma Ul Husna Play Error:", err);
-          setPlayingId(null);
-        });
-        setPlayingId(number);
-      } else {
-        console.error("No audio data received from Gemini TTS");
-      }
-    } catch (error) {
-      console.error("Audio error:", error);
-    } finally {
-      setLoadingAudioId(null);
-    }
-  };
 
   if (loading) {
     return (
@@ -201,19 +84,6 @@ export default function AsmaUlHusnaView({ setActiveView }: AsmaUlHusnaViewProps)
               <span className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold text-sm">
                 {toArabicNumerals(index + 1)}
               </span>
-              <button
-                onClick={() => playAudio(index + 1, name.name)}
-                disabled={loadingAudioId === index + 1}
-                className="p-2 text-slate-400 hover:text-islamic-green dark:hover:text-emerald-400 hover:bg-islamic-green/10 dark:bg-emerald-500/20 rounded-full transition-colors disabled:opacity-50"
-              >
-                {loadingAudioId === index + 1 ? (
-                  <div className="w-5 h-5 rounded-full border-2 border-islamic-green border-t-transparent animate-spin" />
-                ) : playingId === index + 1 ? (
-                  <Volume2 className="w-5 h-5 text-islamic-green dark:text-emerald-400 animate-pulse" />
-                ) : (
-                  <Play className="w-5 h-5" />
-                )}
-              </button>
             </div>
 
             <div className="text-center space-y-4">

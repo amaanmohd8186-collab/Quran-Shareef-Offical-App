@@ -3,7 +3,6 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
-import { GoogleGenAI } from "@google/genai";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -38,29 +37,10 @@ async function startServer() {
 
   app.post("/.netlify/functions/tafseer", async (req, res) => {
     try {
-      const { surahNum, ayahNum, text, translation } = req.body;
-      
-      if (!process.env.GEMINI_API_KEY) {
-        return res.status(500).json({ error: "GEMINI_API_KEY is not set in the environment variables." });
-      }
-
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const prompt = `Provide a short, easy-to-understand Tafsir (explanation) in Hindi for Surah ${surahNum}, Ayah ${ayahNum} of the Quran.
-          
-Arabic: ${text}
-Translation: ${translation}
-
-Format the response in clean HTML using <p>, <strong>, and <ul> tags. Do not use markdown backticks. Make it very fast and concise.`;
-
-      const model = ai.getGenerativeModel({ model: "gemini-3-flash-preview" });
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const tafsirText = response.text().replace(/```/g, '');
-
-      res.json({ tafsir: tafsirText });
+      res.json({ tafsir: "Online AI Tafseer is currently disabled. Please use the English Tafseer option for detailed explanations." });
     } catch (error) {
       console.error("Tafseer error:", error);
-      res.status(500).json({ error: "Failed to generate Tafseer" });
+      res.status(500).json({ error: "Failed to provide Tafseer" });
     }
   });
 

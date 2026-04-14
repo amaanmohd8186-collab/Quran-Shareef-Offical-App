@@ -77,7 +77,7 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
   const [tafsirContent, setTafsirContent] = useState<string | null>(null);
   const [isTafsirLoading, setIsTafsirLoading] = useState(false);
   const [tafsirError, setTafsirError] = useState<string | null>(null);
-  const [tafsirLang, setTafsirLang] = useState<'en' | 'hi'>('hi');
+  const [tafsirLang, setTafsirLang] = useState<'en'>('en');
   const tafsirAbortController = useRef<AbortController | null>(null);
   
   // Audio State
@@ -107,6 +107,7 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
   }, [currentAudioUrl]);
 
   const formatTime = (time: number) => {
+    if (isNaN(time) || !isFinite(time)) return "0:00";
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
@@ -209,7 +210,7 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
     }
   };
 
-  const fetchTafsir = async (surahNum: number, ayahNum: number, text: string, translation: string, lang: 'en' | 'hi' = tafsirLang) => {
+  const fetchTafsir = async (surahNum: number, ayahNum: number, text: string, translation: string, lang: 'en' = tafsirLang) => {
     setSelectedTafsir({ surahNum, ayahNum, text, translation });
     setTafsirLang(lang);
     setTafsirContent(null);
@@ -222,58 +223,31 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
     tafsirAbortController.current = new AbortController();
     
     try {
-      if (lang === 'en') {
-        const cacheKey = `quran_tafsir_surah_${surahNum}`;
-        const cached = localStorage.getItem(cacheKey);
-        
-        let hasEnglish = false;
-        let englishText = '';
+      const cacheKey = `quran_tafsir_surah_${surahNum}`;
+      const cached = localStorage.getItem(cacheKey);
+      
+      let hasEnglish = false;
+      let englishText = '';
 
-        if (cached) {
-          const tafsirMap = JSON.parse(cached);
-          if (tafsirMap[ayahNum]) {
-            englishText = tafsirMap[ayahNum];
-            setTafsirContent(englishText);
-            hasEnglish = true;
-          }
-        }
-
-        if (!hasEnglish) {
-          const res = await fetch(`https://api.quran.com/api/v4/tafsirs/169/by_ayah/${surahNum}:${ayahNum}`);
-          const data = await res.json();
-          englishText = data.tafsir.text;
+      if (cached) {
+        const tafsirMap = JSON.parse(cached);
+        if (tafsirMap[ayahNum]) {
+          englishText = tafsirMap[ayahNum];
           setTafsirContent(englishText);
-          const map = cached ? JSON.parse(cached) : {};
-          map[ayahNum] = englishText;
-          localStorage.setItem(cacheKey, JSON.stringify(map));
+          hasEnglish = true;
         }
-        setIsTafsirLoading(false);
-      } else {
-        // Hindi Tafsir using Backend API (to keep API key secure and avoid Netlify issues)
-        const response = await fetch('/.netlify/functions/tafseer', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ surahNum, ayahNum, text, translation }),
-          signal: tafsirAbortController.current?.signal
-        });
-
-        const contentType = response.headers.get("content-type");
-        if (contentType && contentType.indexOf("application/json") !== -1) {
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => null);
-            throw new Error(errorData?.error || 'Failed to fetch Tafseer');
-          }
-          const data = await response.json();
-          setTafsirContent(data.tafsir);
-        } else {
-          const text = await response.text();
-          console.error("Received non-JSON response:", text.substring(0, 100));
-          throw new Error("Received invalid response from server. The API endpoint might be missing or misconfigured.");
-        }
-        setIsTafsirLoading(false);
       }
+
+      if (!hasEnglish) {
+        const res = await fetch(`https://api.quran.com/api/v4/tafsirs/169/by_ayah/${surahNum}:${ayahNum}`);
+        const data = await res.json();
+        englishText = data.tafsir.text;
+        setTafsirContent(englishText);
+        const map = cached ? JSON.parse(cached) : {};
+        map[ayahNum] = englishText;
+        localStorage.setItem(cacheKey, JSON.stringify(map));
+      }
+      setIsTafsirLoading(false);
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         setTafsirError(err.message || "Could not load Tafsir. Please try again later.");
@@ -361,8 +335,13 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
             }
           } catch (e) {
             console.error("Audio play failed:", e);
-            setAudioError("Playback interrupted. Please try again.");
-            setIsAudioLoading(false);
+            // If it's a blob URL and it failed, maybe the blob is corrupted?
+            if (currentAudioUrl.startsWith('blob:') && !isFallback) {
+              playAudio(url, context, true);
+            } else {
+              setAudioError("Playback interrupted. Please try again.");
+              setIsAudioLoading(false);
+            }
           }
         }
         return;
@@ -385,7 +364,6 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
           if (cachedResponse) {
             const blob = await cachedResponse.blob();
             audioSource = URL.createObjectURL(blob);
-            console.log("Playing from offline cache (stored URL):", storedUrl);
           }
         }
       }
@@ -395,7 +373,6 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
         if (cachedResponse) {
           const blob = await cachedResponse.blob();
           audioSource = URL.createObjectURL(blob);
-          console.log("Playing from offline cache:", url);
         }
       }
     } catch (e) {
@@ -403,42 +380,19 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
     }
 
     const audio = new Audio();
-    // Only set crossOrigin for network URLs to avoid issues with local blobs
-    // and only if we haven't failed with it before for this URL
     const hasFailedWithCORS = localStorage.getItem(`cors_fail_${url}`);
     if (!audioSource.startsWith('blob:') && !hasFailedWithCORS) {
       audio.crossOrigin = "anonymous";
     }
     
     audio.src = audioSource;
+    audio.preload = "auto";
+    audio.load();
     audioRef.current = audio;
     setCurrentAudioUrl(url);
     setActiveAyahNumber(context?.ayahGlobal || null);
-    setAudioError(null); // Clear previous errors
     
-    audio.oncanplay = async () => {
-      try {
-        if (audioRef.current === audio) {
-          const playPromise = audio.play();
-          if (playPromise !== undefined) {
-            await playPromise;
-            setIsPlaying(true);
-            setIsAudioLoading(false);
-          }
-        }
-      } catch (e) {
-        console.error("Audio play failed:", e);
-        // If it's a blob URL and it failed, maybe the blob is corrupted?
-        // Let's try to play from network as a last resort
-        if (audioSource.startsWith('blob:') && !isFallback) {
-          console.log("Cached blob failed, falling back to network...");
-          playAudio(url, context, true);
-        } else {
-          setIsAudioLoading(false);
-        }
-      }
-    };
-
+    // Set up listeners BEFORE calling play
     audio.onplay = () => {
       setIsPlaying(true);
       setIsAudioLoading(false);
@@ -449,6 +403,7 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
     };
 
     audio.onended = () => {
+      console.log("Audio ended for:", url);
       setIsPlaying(false);
       setActiveAyahNumber(null);
       setIsAudioLoading(false);
@@ -456,165 +411,33 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
 
     audio.onerror = async () => {
       console.error("Audio Error for URL:", url);
-      
-      // If CORS failed, remember it and retry without crossOrigin
-      if (audio.crossOrigin === "anonymous") {
-        console.log("CORS might have failed, retrying without crossOrigin...");
-        localStorage.setItem(`cors_fail_${url}`, 'true');
-        playAudio(url, context, true);
-        return;
-      }
-
-      // Multi-stage Fallback logic
-      let fallbackUrl = "";
-      const stage = (url.includes('islamic.network') ? 1 : 
-                    url.includes('qurancdn.com') ? 2 : 
-                    url.includes('everyayah.com') ? 3 : 
-                    url.includes('verses.quran.com') ? 4 :
-                    url.includes('quranicaudio.com') ? 5 : 6);
-
-      if (stage < 7) {
-        // If it's an Ayah audio
-        if (context?.surahNum && context?.ayahInSurah) {
-          const s = context.surahNum.toString().padStart(3, '0');
-          const a = context.ayahInSurah.toString().padStart(3, '0');
-          const ayahKey = `${context.surahNum}:${context.ayahInSurah}`;
-
-          if (stage === 1) {
-            // Stage 2: Quran.com CDN (Most reliable)
-            const quranCdnMap: Record<string, string> = {
-              'ar.alafasy': 'Mishari_Rashid_Al-Afasy',
-              'ar.hudhaify': 'Ali_Al-Huthaify',
-              'ar.minshawi': 'Muhammad_Siddiq_al-Minshawi',
-              'ar.abdulsamad': 'Abdul_Basit_Murattal',
-              'ar.abdurrahmaansudais': 'Abdurrahmaan_As-Sudais',
-              'ar.mahermuaiqly': 'Maher_Al-Muaiqly',
-              'ar.saoodshuraym': 'Sa\'ood_ash-Shuraym'
-            };
-            const reciter = quranCdnMap[selectedReciter] || 'Mishari_Rashid_Al-Afasy';
-            fallbackUrl = `https://audio.qurancdn.com/${reciter}/mp3/${s}${a}.mp3`;
-          } else if (stage === 2) {
-            // Stage 3: EveryAyah
-            const everyAyahMap: Record<string, string> = {
-              'ar.alafasy': 'Alafasy_128kbps',
-              'ar.hudhaify': 'Hudhaify_128kbps',
-              'ar.minshawi': 'Minshawi_Murattal_128kbps',
-              'ar.abdulsamad': 'Abdul_Basit_Murattal_128kbps',
-              'ar.abdurrahmaansudais': 'Abdurrahmaan_As-Sudais_192kbps',
-              'ar.mahermuaiqly': 'Maher_AlMuaiqly_64kbps',
-              'ar.saoodshuraym': 'Saood_ash-Shuraym_128kbps'
-            };
-            const reciter = everyAyahMap[selectedReciter] || 'Alafasy_128kbps';
-            fallbackUrl = `https://www.everyayah.com/data/${reciter}/${s}${a}.mp3`;
-          } else if (stage === 3) {
-            // Stage 4: EveryAyah Mirror
-            const everyAyahMap: Record<string, string> = {
-              'ar.alafasy': 'Alafasy_128kbps',
-              'ar.hudhaify': 'Hudhaify_128kbps',
-              'ar.minshawi': 'Minshawi_Murattal_128kbps',
-              'ar.abdulsamad': 'Abdul_Basit_Murattal_128kbps',
-              'ar.abdurrahmaansudais': 'Abdurrahmaan_As-Sudais_192kbps',
-              'ar.mahermuaiqly': 'Maher_AlMuaiqly_64kbps',
-              'ar.saoodshuraym': 'Saood_ash-Shuraym_128kbps'
-            };
-            const reciter = everyAyahMap[selectedReciter] || 'Alafasy_128kbps';
-            fallbackUrl = `https://mirrors.quranicaudio.com/everyayah/${reciter}/${s}${a}.mp3`;
-          } else if (stage === 4) {
-            // Stage 5: Verses.quran.com
-            const versesMap: Record<string, string> = {
-              'ar.alafasy': 'Mishari_Rashid_Al-Afasy',
-              'ar.abdulsamad': 'Abdul_Basit_Murattal',
-              'ar.hudhaify': 'Ali_Al-Huthaify',
-              'ar.minshawi': 'Muhammad_Siddiq_al-Minshawi',
-              'ar.abdurrahmaansudais': 'Abdurrahmaan_As-Sudais',
-              'ar.mahermuaiqly': 'Maher_Al-Muaiqly',
-              'ar.saoodshuraym': 'Sa\'ood_ash-Shuraym'
-            };
-            const reciter = versesMap[selectedReciter] || 'Mishari_Rashid_Al-Afasy';
-            fallbackUrl = `https://verses.quran.com/${reciter}/mp3/${s}${a}.mp3`;
-          } else if (stage === 5 || stage === 6) {
-            // Final Stage: Fetch from Quran.com API
-            const recitationId = QURAN_COM_RECITATION_IDS[selectedReciter] || 7;
-            try {
-              const res = await fetch(`https://api.quran.com/api/v4/recitations/${recitationId}/by_ayah/${ayahKey}`);
-              const data = await res.json();
-              if (data.audio_files && data.audio_files[0] && data.audio_files[0].url) {
-                let finalUrl = data.audio_files[0].url;
-                if (!finalUrl.startsWith('http')) finalUrl = `https:${finalUrl}`;
-                fallbackUrl = finalUrl;
-              }
-            } catch (e) {
-              console.error("Failed to fetch from Quran.com API", e);
-            }
-          }
-        } 
-        // If it's a Surah audio
-        else if (context?.surahNum) {
-          const s = context.surahNum.toString().padStart(3, '0');
-          
-          const qAudioMap: Record<string, string> = {
-            'ar.alafasy': 'mishari_rashid_alafasy',
-            'ar.hudhaify': 'ali_alhuthaifi',
-            'ar.abdulsamad': 'abdul_basit_murattal',
-            'ar.abdurrahmaansudais': 'abdurrahman_as-sudais',
-            'ar.mahermuaiqly': 'maher_almuaiqly',
-            'ar.minshawi': 'muhammad_siddeeq_al-minshaawee',
-            'ar.saoodshuraym': 'sa3ood_ash-shuraym'
-          };
-          
-          const versesMap: Record<string, string> = {
-            'ar.alafasy': 'Mishari_Rashid_Al-Afasy',
-            'ar.abdulsamad': 'Abdul_Basit_Murattal',
-            'ar.hudhaify': 'Ali_Al-Huthaifi',
-            'ar.minshawi': 'Muhammad_Siddiq_al-Minshawi',
-            'ar.abdurrahmaansudais': 'Abdurrahmaan_As-Sudais',
-            'ar.mahermuaiqly': 'Maher_Al-Muaiqly',
-            'ar.saoodshuraym': 'Sa\'ood_ash-Shuraym'
-          };
-
-          const reciter = qAudioMap[selectedReciter] || 'mishari_rashid_alafasy';
-          const vReciter = versesMap[selectedReciter] || 'Mishari_Rashid_Al-Afasy';
-
-          if (stage === 1) {
-            // Stage 2: Verses.quran.com (Very stable)
-            fallbackUrl = `https://verses.quran.com/${vReciter}/mp3/${s}.mp3`;
-          } else if (stage === 4) {
-            // Stage 3: QuranicAudio Download Server
-            fallbackUrl = `https://download.quranicaudio.com/quran/${reciter}/${s}.mp3`;
-          } else if (stage === 5) {
-            // Stage 4: Try another QuranicAudio server if download fails
-            const servers = ['server10', 'server6', 'server12', 'server8'];
-            const currentServerMatch = url.match(/https:\/\/(.*?)\.quranicaudio\.com/);
-            const currentServer = currentServerMatch ? currentServerMatch[1] : 'download';
-            
-            let nextServer = '';
-            if (currentServer === 'download') {
-              nextServer = 'server10';
-            } else {
-              const currentIndex = servers.indexOf(currentServer);
-              if (currentIndex !== -1 && currentIndex < servers.length - 1) {
-                nextServer = servers[currentIndex + 1];
-              }
-            }
-            
-            if (nextServer) {
-              fallbackUrl = `https://${nextServer}.quranicaudio.com/quran/${reciter}/${s}.mp3`;
-            }
-          }
-        }
-
-        if (fallbackUrl && fallbackUrl !== url) {
-          console.log(`Attempting Stage Fallback:`, fallbackUrl);
-          playAudio(fallbackUrl, context, true);
-          return;
-        }
-      }
-
-      setAudioError("Audio source not found. Please try another reciter or check your connection.");
+      setAudioError("Audio playback failed. Please try again.");
       setIsPlaying(false);
       setActiveAyahNumber(null);
       setIsAudioLoading(false);
     };
+
+
+
+    // Attempt to play immediately
+    try {
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        await playPromise;
+      }
+    } catch (e) {
+      console.warn("Initial play failed, waiting for canplay event...", e);
+      audio.oncanplay = async () => {
+        try {
+          if (audioRef.current === audio) {
+            await audio.play();
+          }
+        } catch (e2) {
+          console.error("Delayed play failed:", e2);
+          setIsAudioLoading(false);
+        }
+      };
+    }
   };
 
   const playSurahAudio = async (number: number) => {
@@ -880,6 +703,16 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
                     <div className="text-right flex flex-col items-end gap-2">
                       <p className="arabic-text text-xl text-islamic-green dark:text-emerald-400">{surah.name}</p>
                       <div className="flex items-center gap-2">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            playSurahAudio(surah.number);
+                          }}
+                          className="p-1.5 bg-islamic-green/10 text-islamic-green dark:text-emerald-400 rounded-lg hover:bg-islamic-green hover:text-white transition-all"
+                          title="Play Surah"
+                        >
+                          <Play className="w-3 h-3" />
+                        </button>
                         <p className="text-[10px] text-slate-400 uppercase">{surah.numberOfAyahs} Ayahs</p>
                         <button 
                           onClick={(e) => {
@@ -1269,20 +1102,6 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
                   <p className="text-sm text-slate-500 dark:text-slate-400">Surah {selectedSurah?.englishName} • Ayah {selectedTafsir.ayahNum}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 mr-2">
-                    <button
-                      onClick={() => fetchTafsir(selectedTafsir.surahNum, selectedTafsir.ayahNum, selectedTafsir.text, selectedTafsir.translation, 'hi')}
-                      className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${tafsirLang === 'hi' ? 'bg-white dark:bg-slate-900 text-islamic-green dark:text-emerald-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'}`}
-                    >
-                      Hindi
-                    </button>
-                    <button
-                      onClick={() => fetchTafsir(selectedTafsir.surahNum, selectedTafsir.ayahNum, selectedTafsir.text, selectedTafsir.translation, 'en')}
-                      className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${tafsirLang === 'en' ? 'bg-white dark:bg-slate-900 text-islamic-green dark:text-emerald-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'}`}
-                    >
-                      English
-                    </button>
-                  </div>
                   <button
                     onClick={() => {
                       setSelectedTafsir(null);
@@ -1324,6 +1143,87 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
                 ) : null}
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Persistent Player */}
+      <AnimatePresence>
+        {currentAudioUrl && (
+          <motion.div 
+            initial={{ y: 100 }}
+            animate={{ y: 0 }}
+            exit={{ y: 100 }}
+            className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shadow-[0_-8px_30px_rgb(0,0,0,0.04)] z-[60] p-4 pb-safe"
+          >
+            <div className="max-w-4xl mx-auto flex items-center gap-4">
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-bold text-islamic-green dark:text-emerald-400 uppercase tracking-widest mb-0.5">Now Playing</p>
+                <h4 className="font-bold text-slate-800 dark:text-slate-200 truncate text-sm">
+                  {selectedSurah ? selectedSurah.englishName : "Holy Quran"} 
+                  {activeAyahNumber ? ` - Ayah ${activeAyahNumber}` : " - Full Surah"}
+                </h4>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => {
+                    if (audioRef.current) {
+                      if (isPlaying) audioRef.current.pause();
+                      else audioRef.current.play();
+                    }
+                  }}
+                  className="w-10 h-10 bg-islamic-green text-white rounded-full flex items-center justify-center shadow-lg hover:bg-islamic-green/90 transition-all active:scale-95"
+                >
+                  {isAudioLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : isPlaying ? (
+                    <Pause className="w-5 h-5" />
+                  ) : (
+                    <Play className="w-5 h-5 ml-0.5" />
+                  )}
+                </button>
+              </div>
+
+              <div className="hidden sm:flex flex-col flex-[2] gap-1.5">
+                <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+                  <span>{formatTime(currentTime)}</span>
+                  <span>{formatTime(duration)}</span>
+                </div>
+                <div 
+                  className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden cursor-pointer relative"
+                  onClick={(e) => {
+                    if (audioRef.current && duration) {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const x = e.clientX - rect.left;
+                      const percentage = x / rect.width;
+                      audioRef.current.currentTime = percentage * duration;
+                    }
+                  }}
+                >
+                  <div 
+                    className="h-full bg-islamic-green dark:bg-emerald-400 transition-all duration-100"
+                    style={{ width: `${(currentTime / duration) * 100}%` }}
+                  />
+                </div>
+              </div>
+
+              <button 
+                onClick={() => {
+                  if (audioRef.current) {
+                    audioRef.current.pause();
+                    audioRef.current.src = "";
+                  }
+                  setIsPlaying(false);
+                  setCurrentAudioUrl(null);
+                  setActiveAyahNumber(null);
+                }}
+                className="p-2 text-slate-400 hover:text-rose-500 transition-colors"
+                title="Close Player"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -18,5 +18,29 @@
   {
     "question": "What is Ramadan?",
     "answer": "Ramadan is the ninth month of the Islamic lunar calendar, observed by Muslims worldwide as a month of fasting (Sawm), prayer, reflection, and community."
+  },
+  {
+    "question": "What is Hajj?",
+    "answer": "Hajj is the annual Islamic pilgrimage to Makkah, Saudi Arabia, the holiest city for Muslims. It is a mandatory religious duty for Muslims that must be carried out at least once in their lifetime by all adult Muslims who are physically and financially capable of undertaking the journey."
+  },
+  {
+    "question": "Who is Prophet Muhammad (PBUH)?",
+    "answer": "Prophet Muhammad (peace be upon him) is the final prophet and messenger of Allah. He was born in Makkah and received the revelation of the Quran over a period of 23 years. He is the perfect example for all of humanity."
+  },
+  {
+    "question": "What is the meaning of Islam?",
+    "answer": "The word 'Islam' is derived from the Arabic root 'Salama', which means peace, purity, submission, and obedience. In a religious sense, Islam means submission to the will of Allah and obedience to His law."
+  },
+  {
+    "question": "What is Shahada?",
+    "answer": "The Shahada is the Islamic profession of faith: 'La ilaha illa Allah, Muhammadur rasul Allah', which means 'There is no god but Allah, and Muhammad is the messenger of Allah'. It is the first pillar of Islam."
+  },
+  {
+    "question": "What is Wudu?",
+    "answer": "Wudu is the Islamic procedure for washing parts of the body, a type of ritual purification. It involves washing the hands, mouth, nostrils, face, arms, head, and feet with water and is an important prerequisite for prayer (Salah)."
+  },
+  {
+    "question": "What is the Kaaba?",
+    "answer": "The Kaaba is a building at the center of Islam's most important mosque, the Masjid al-Haram in Makkah. It is the most sacred site in Islam and is considered by Muslims to be the Bayt Allah (House of God). Muslims around the world face the Kaaba during prayer."
   }
 ]
