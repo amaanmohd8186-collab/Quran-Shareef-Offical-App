@@ -5,6 +5,9 @@ import QuranView from './components/QuranView';
 import QuizView from './components/QuizView';
 import HadithView from './components/HadithView';
 import DuaView from './components/DuaView';
+import KalimasView from './components/KalimasView';
+import FivePillarsView from './components/FivePillarsView';
+import ReflectionJournalView from './components/ReflectionJournalView';
 import HidayatView from './components/HidayatView';
 import TasbeehView from './components/TasbeehView';
 import AIAssistant from './components/AIAssistant';
@@ -21,6 +24,7 @@ import LiveZiyaratView from './components/LiveZiyaratView';
 import NamazTimesView from './components/NamazTimesView';
 import QiblaView from './components/QiblaView';
 import HifzDetectorView from './components/HifzDetectorView';
+import SplashScreen from './components/SplashScreen';
 import { AppView } from './types';
 import { Menu, Volume2, X, Heart, Moon, Sun } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -28,6 +32,7 @@ import { motion, AnimatePresence } from 'motion/react';
 const DEFAULT_AZAN_URL = 'https://www.islamcan.com/audio/adhan/azan1.mp3';
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
   const [activeView, setActiveView] = useState<AppView>('home');
   const [quranScrollPos, setQuranScrollPos] = useState(0);
   const [isQuranSearchMode, setIsQuranSearchMode] = useState(false);
@@ -156,6 +161,12 @@ export default function App() {
         return <HadithView setActiveView={handleViewChange} />;
       case 'dua':
         return <DuaView setActiveView={handleViewChange} />;
+      case 'kalimas':
+        return <KalimasView setActiveView={handleViewChange} />;
+      case 'five_pillars':
+        return <FivePillarsView setActiveView={handleViewChange} />;
+      case 'reflection_journal':
+        return <ReflectionJournalView setActiveView={handleViewChange} />;
       case 'tasbeeh':
         return <TasbeehView setActiveView={handleViewChange} />;
       case 'hidayat':
@@ -193,6 +204,9 @@ export default function App() {
 
   return (
     <div className="flex h-screen bg-cream dark:bg-slate-900 overflow-hidden transition-colors duration-300">
+      <AnimatePresence>
+        {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+      </AnimatePresence>
       <AnimatePresence>
         {isAlarmPlaying && (
           <motion.div 

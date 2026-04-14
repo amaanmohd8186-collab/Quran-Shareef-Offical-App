@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Compass, ArrowLeft, Loader2 } from 'lucide-react';
 import { AppView } from '../types';
+import PermissionGuard from './PermissionGuard';
 
 interface QiblaViewProps {
   setActiveView: (view: AppView) => void;
@@ -9,14 +10,23 @@ interface QiblaViewProps {
 
 export default function QiblaView({ setActiveView }: QiblaViewProps) {
   const [direction, setDirection] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchQibla = async () => {
+    setLoading(true);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          fetchQibla(position.coords.latitude, position.coords.longitude);
+        async (position) => {
+          try {
+            const response = await fetch(`https://api.aladhan.com/v1/qibla/${position.coords.latitude}/${position.coords.longitude}`);
+            const data = await response.json();
+            setDirection(data.data.direction);
+            setLoading(false);
+          } catch (err) {
+            setError("Failed to fetch Qibla direction.");
+            setLoading(false);
+          }
         },
         (err) => {
           setError("Location access denied. Please enable location to find Qibla.");
@@ -25,18 +35,6 @@ export default function QiblaView({ setActiveView }: QiblaViewProps) {
       );
     } else {
       setError("Geolocation is not supported by your browser.");
-      setLoading(false);
-    }
-  }, []);
-
-  const fetchQibla = async (lat: number, lon: number) => {
-    try {
-      const response = await fetch(`https://api.aladhan.com/v1/qibla/${lat}/${lon}`);
-      const data = await response.json();
-      setDirection(data.data.direction);
-      setLoading(false);
-    } catch (err) {
-      setError("Failed to fetch Qibla direction.");
       setLoading(false);
     }
   };
@@ -54,29 +52,47 @@ export default function QiblaView({ setActiveView }: QiblaViewProps) {
         <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-200">Qibla Direction</h1>
       </div>
 
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-          <Loader2 className="w-10 h-10 animate-spin text-islamic-green mb-4" />
-          <p>Calculating Qibla direction...</p>
-        </div>
-      ) : error ? (
-        <div className="p-8 text-center text-rose-500 bg-rose-50 rounded-3xl">{error}</div>
-      ) : direction !== null && (
-        <div className="bg-white dark:bg-slate-900 p-12 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col items-center gap-8">
-          <div className="relative w-64 h-64 flex items-center justify-center">
-            <Compass className="w-48 h-48 text-islamic-green dark:text-emerald-400 opacity-20" />
-            <motion.div 
-              initial={{ rotate: 0 }}
-              animate={{ rotate: direction }}
-              className="absolute w-2 h-32 bg-rose-500 rounded-full origin-bottom"
-            />
-            <div className="absolute w-4 h-4 bg-islamic-green rounded-full" />
+      <PermissionGuard permissionType="geolocation" onGranted={fetchQibla}>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+            <Loader2 className="w-10 h-10 animate-spin text-islamic-green mb-4" />
+            <p>Calculating Qibla direction...</p>
           </div>
-          <p className="text-2xl font-bold text-slate-800 dark:text-slate-200">
-            Direction: {direction.toFixed(2)}° from North
-          </p>
-        </div>
-      )}
+        ) : error ? (
+          <div className="p-8 text-center bg-rose-50 dark:bg-rose-950/30 rounded-3xl border border-rose-100 dark:border-rose-900/50 space-y-6">
+            <div className="w-20 h-20 bg-rose-100 dark:bg-rose-900/50 rounded-full flex items-center justify-center mx-auto">
+              <Compass className="w-10 h-10 text-rose-500" />
+            </div>
+            <div className="space-y-2">
+              <p className="text-lg text-rose-700 dark:text-rose-300 font-bold">Location Access Denied</p>
+              <p className="text-sm text-rose-600 dark:text-rose-400">
+                To find the Qibla direction, please enable location permissions in your browser settings and try again.
+              </p>
+            </div>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-8 py-3 bg-rose-500 text-white rounded-full font-bold hover:bg-rose-600 transition-colors shadow-lg shadow-rose-500/20"
+            >
+              Retry Location
+            </button>
+          </div>
+        ) : direction !== null && (
+          <div className="bg-white dark:bg-slate-900 p-12 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col items-center gap-8">
+            <div className="relative w-64 h-64 flex items-center justify-center">
+              <Compass className="w-48 h-48 text-islamic-green dark:text-emerald-400 opacity-20" />
+              <motion.div 
+                initial={{ rotate: 0 }}
+                animate={{ rotate: direction }}
+                className="absolute w-2 h-32 bg-rose-500 rounded-full origin-bottom"
+              />
+              <div className="absolute w-4 h-4 bg-islamic-green rounded-full" />
+            </div>
+            <p className="text-2xl font-bold text-slate-800 dark:text-slate-200">
+              Direction: {direction.toFixed(2)}° from North
+            </p>
+          </div>
+        )}
+      </PermissionGuard>
     </div>
   );
 }

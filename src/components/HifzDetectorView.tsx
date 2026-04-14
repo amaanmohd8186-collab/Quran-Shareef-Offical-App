@@ -31,7 +31,7 @@ export default function HifzDetectorView({ setActiveView }: HifzDetectorProps) {
       if (progress.totalMistakes > 0) {
         feedback += ` You made ${progress.totalMistakes} mistakes.`;
         progress.mistakes.forEach((m, i) => {
-          feedback += ` Mistake ${i + 1}: ${m.word}.`;
+          feedback += ` Mistake ${i + 1}: You said ${m.word}, but it should be ${m.expectedWord}.`;
         });
       } else {
         feedback += " Excellent recitation!";

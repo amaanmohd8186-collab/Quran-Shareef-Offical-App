@@ -81,74 +81,71 @@ export default function TasbeehView({ setActiveView }: TasbeehViewProps) {
   };
 
   return (
-    <div className="max-w-md mx-auto h-full flex flex-col items-center justify-center p-6 bg-slate-100 dark:bg-slate-950">
+    <div className="max-w-md mx-auto h-full flex flex-col items-center justify-center p-6 bg-slate-950">
       <button 
         onClick={() => setActiveView('home')}
-        className="self-start flex items-center gap-2 text-islamic-green dark:text-emerald-400 font-medium hover:underline mb-6"
+        className="self-start flex items-center gap-2 text-cyan-400 font-medium hover:underline mb-6"
       >
-        <ArrowLeft className="w-5 h-5" /> Back to Home
+        <ArrowLeft className="w-5 h-5" /> Back
       </button>
       
-      {/* Device Body */}
-      <div className="relative w-72 h-96 bg-cyan-500 rounded-[3rem] shadow-2xl border-b-8 border-cyan-700 flex flex-col items-center p-6">
-        {/* Beaded Texture Effect */}
-        <div className="absolute inset-0 rounded-[3rem] border-4 border-cyan-400 opacity-50 pointer-events-none"></div>
-        
-        {/* Screen */}
-        <div className="w-full h-24 bg-black rounded-2xl border-4 border-cyan-900 flex flex-col items-center justify-center mb-8 shadow-inner">
-          <p className="text-[10px] font-bold text-cyan-800 uppercase tracking-[0.2em] mb-1">Tally Counter</p>
-          <motion.h3 
-            key={count}
-            initial={{ scale: 0.9, opacity: 0.5 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="text-5xl font-mono font-bold text-cyan-400"
+      {/* Realistic 3D Device */}
+      <div className="relative w-80 h-80 bg-slate-900 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_2px_10px_rgba(255,255,255,0.1)] border-[12px] border-slate-800 flex flex-col items-center justify-center p-8">
+        {/* Glossy Black Inner Circle */}
+        <div className="w-full h-full rounded-full bg-black shadow-[inset_0_0_40px_rgba(0,255,255,0.1)] flex flex-col items-center justify-center">
+          
+          {/* Neon Turquoise Screen */}
+          <div className="mb-6">
+            <motion.h3 
+              key={count}
+              initial={{ opacity: 0.5 }}
+              animate={{ opacity: 1 }}
+              className="text-7xl font-mono font-bold text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]"
+            >
+              {count}
+            </motion.h3>
+          </div>
+
+          {/* Reset Button */}
+          <button
+            onClick={reset}
+            className="px-8 py-2 bg-gradient-to-r from-cyan-600 to-cyan-400 rounded-full shadow-[0_4px_10px_rgba(0,0,0,0.5)] text-black font-bold text-lg hover:from-cyan-500 hover:to-cyan-300 transition-all"
+            aria-label="Reset"
           >
-            {count.toString().padStart(5, '0')}
-          </motion.h3>
+            Reset
+          </button>
         </div>
-
-        {/* Main Count Button */}
-        <button
-          onClick={increment}
-          className="w-24 h-24 bg-slate-300 rounded-full shadow-[0_10px_0_#94a3b8] active:shadow-none active:translate-y-2 transition-all border-4 border-slate-400 mb-6"
-          aria-label="Count"
-        >
-          <span className="text-slate-600 font-bold">COUNT</span>
-        </button>
-
-        {/* Reset Button */}
-        <button
-          onClick={reset}
-          className="w-16 h-16 bg-slate-400 rounded-full shadow-[0_5px_0_#64748b] active:shadow-none active:translate-y-1 transition-all border-4 border-slate-500"
-          aria-label="Reset"
-        >
-          <span className="text-slate-700 font-bold text-xs">RESET</span>
-        </button>
       </div>
 
+      {/* Main Count Button */}
+      <button
+        onClick={increment}
+        className="mt-12 w-40 h-40 bg-slate-800 rounded-full shadow-[0_10px_20px_rgba(0,0,0,0.5)] active:scale-95 transition-all border-4 border-slate-700"
+        aria-label="Count"
+      />
+
       {/* Controls & History */}
-      <div className="w-full mt-8 flex justify-center gap-4">
-        <button onClick={() => setActiveView('home')} className="p-4 bg-white dark:bg-slate-900 rounded-2xl shadow-sm text-slate-600"><Home /></button>
-        <button onClick={saveSession} className="p-4 bg-islamic-green text-white rounded-2xl shadow-sm font-bold">Save Session</button>
-        <button onClick={() => setVibrate(!vibrate)} className={cn("p-4 rounded-2xl", vibrate ? "bg-cyan-500 text-white" : "bg-slate-200")}>
+      <div className="w-full mt-8 flex justify-center gap-4 text-slate-400">
+        <button onClick={() => setVibrate(!vibrate)} className={cn("p-4 rounded-2xl", vibrate ? "text-cyan-400" : "text-slate-600")}>
           <Vibrate />
         </button>
-        <button onClick={() => setSound(!sound)} className={cn("p-4 rounded-2xl", sound ? "bg-cyan-500 text-white" : "bg-slate-200")}>
+        <button onClick={() => setSound(!sound)} className={cn("p-4 rounded-2xl", sound ? "text-cyan-400" : "text-slate-600")}>
           {sound ? <Volume2 /> : <VolumeX />}
         </button>
+        <button onClick={saveSession} className="p-4 bg-cyan-900/30 text-cyan-400 rounded-2xl font-bold border border-cyan-900">Save</button>
       </div>
 
       {/* History */}
-      <div className="w-full mt-8 bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
+      <div className="w-full mt-8 bg-slate-900/50 rounded-2xl p-4 border border-slate-800">
+        <div className="flex items-center justify-between mb-4 text-cyan-400">
           <h4 className="font-bold flex items-center gap-2"><History className="w-4 h-4"/> History</h4>
           <button onClick={() => setSessions([])} className="text-rose-500 text-xs font-bold"><Trash2 className="w-4 h-4"/></button>
         </div>
         <div className="space-y-2 max-h-40 overflow-y-auto">
           {sessions.map(s => (
-            <div key={s.id} className="flex justify-between text-sm p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
+            <div key={s.id} className="flex justify-between text-sm p-2 bg-slate-950 rounded-lg text-slate-300">
               <span>{s.count}</span>
-              <span className="text-slate-400 text-xs">{s.date}</span>
+              <span className="text-slate-500 text-xs">{s.date}</span>
             </div>
           ))}
         </div>

@@ -1,0 +1,7 @@
+[
+  { "id": 1, "title": "Shahada (Faith)", "tafseer": "The declaration of faith in the oneness of God and the acceptance of Muhammad as God's prophet." },
+  { "id": 2, "title": "Salah (Prayer)", "tafseer": "The performance of five daily prayers facing the Kaaba in Mecca." },
+  { "id": 3, "title": "Zakat (Almsgiving)", "tafseer": "The practice of charitable giving by Muslims based on accumulated wealth." },
+  { "id": 4, "title": "Sawm (Fasting)", "tafseer": "Fasting during the month of Ramadan, from dawn until sunset." },
+  { "id": 5, "title": "Hajj (Pilgrimage)", "tafseer": "The pilgrimage to the holy city of Mecca, which every able-bodied Muslim is obliged to make at least once." }
+]

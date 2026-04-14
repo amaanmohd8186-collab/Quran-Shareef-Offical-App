@@ -148,8 +148,8 @@ export default function QuizView({ setActiveView }: QuizViewProps) {
             {currentQuestion.imageUrl && (
               <img src={currentQuestion.imageUrl} alt="Quiz" className="w-full h-64 object-cover rounded-3xl" referrerPolicy="no-referrer" />
             )}
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
-              <h3 className="text-2xl font-serif text-slate-800 dark:text-slate-200 leading-relaxed">
+            <div className="bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800 p-10 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl">
+              <h3 className="text-3xl font-serif text-slate-900 dark:text-slate-100 leading-snug">
                 {currentQuestion.question[language]}
               </h3>
             </div>

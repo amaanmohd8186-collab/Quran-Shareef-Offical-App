@@ -7,12 +7,6 @@ import surahsData from '../data/surahs.json';
 
 const RECITERS = [
   { id: 'ar.alafasy', name: 'Mishary Rashid Alafasy' },
-  { id: 'ar.abdulsamad', name: 'Abdul Basit Abdus Samad' },
-  { id: 'ar.abdurrahmaansudais', name: 'Abdurrahman As-Sudais' },
-  { id: 'ar.mahermuaiqly', name: 'Maher Al Muaiqly' },
-  { id: 'ar.minshawi', name: 'Mohamed Siddiq El-Minshawi' },
-  { id: 'ar.saoodshuraym', name: 'Sa\'ud al-Shuraym' },
-  { id: 'ar.hudhaify', name: 'Ali Al-Huthaify' },
 ];
 
 const TRANSLATIONS = [
@@ -25,12 +19,6 @@ const TRANSLATIONS = [
 
 const QURAN_COM_RECITATION_IDS: Record<string, number> = {
   'ar.alafasy': 7,
-  'ar.abdulsamad': 1,
-  'ar.abdurrahmaansudais': 3,
-  'ar.mahermuaiqly': 12,
-  'ar.minshawi': 4,
-  'ar.saoodshuraym': 11,
-  'ar.hudhaify': 6,
 };
 
 interface QuranViewProps {
@@ -62,8 +50,7 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [viewMode, setViewMode] = useState<'surah' | 'juz'>('surah');
   const [cachedSurahs, setCachedSurahs] = useState<number[]>([]);
-  const [selectedReciter, setSelectedReciter] = useState(RECITERS[0].id);
-  const [showReciterMenu, setShowReciterMenu] = useState(false);
+  const [selectedReciter] = useState(RECITERS[0].id);
   const [selectedTranslation, setSelectedTranslation] = useState(TRANSLATIONS[0].id);
   const [showTranslationMenu, setShowTranslationMenu] = useState(false);
   const [targetAyah, setTargetAyah] = useState<number | null>(null);
@@ -347,7 +334,9 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
         return;
       }
       audioRef.current.pause();
-      audioRef.current.src = ""; // Clear source
+      audioRef.current.src = "";
+      audioRef.current.load();
+      audioRef.current = null;
     }
 
     // Check cache first
@@ -377,6 +366,12 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
       }
     } catch (e) {
       console.warn("Cache check failed, playing from network:", e);
+    }
+
+    if (!audioSource) {
+      setAudioError("Invalid audio source.");
+      setIsAudioLoading(false);
+      return;
     }
 
     const audio = new Audio();
@@ -409,9 +404,44 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
       setIsAudioLoading(false);
     };
 
-    audio.onerror = async () => {
-      console.error("Audio Error for URL:", url);
-      setAudioError("Audio playback failed. Please try again.");
+    audio.onerror = async (e) => {
+      console.error("Audio Error for URL:", url, e);
+      
+      // If it's a CORS or network issue, try to disable CORS and retry
+      if (!hasFailedWithCORS && audio.error && (audio.error.code === MediaError.MEDIA_ERR_NETWORK || audio.error.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED)) {
+        console.warn("Potential CORS/Network error, retrying without CORS...");
+        localStorage.setItem(`cors_fail_${url}`, 'true');
+        audio.crossOrigin = null;
+        audio.src = "";
+        audio.src = url;
+        audio.load();
+        try {
+          await audio.play();
+          return;
+        } catch (err) {
+          console.error("Retry without CORS failed", err);
+        }
+      }
+
+      // Retry once if not already retried
+      if (!(audio as any).retried) {
+        (audio as any).retried = true;
+        console.log("Retrying audio playback for:", url);
+        
+        // Clear src and reload to force a fresh request
+        audio.src = "";
+        audio.src = url;
+        audio.load();
+        
+        try {
+          await audio.play();
+          return;
+        } catch (err) {
+          console.error("Retry play failed", err);
+        }
+      }
+
+      setAudioError("Audio playback failed. Please check your internet connection.");
       setIsPlaying(false);
       setActiveAyahNumber(null);
       setIsAudioLoading(false);
@@ -561,42 +591,12 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
                 </div>
 
                 <div className="relative">
-                  <button 
-                    onClick={() => setShowReciterMenu(!showReciterMenu)}
-                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-islamic-green dark:hover:text-emerald-400 transition-all shadow-sm"
-                  >
+                  <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-full text-sm font-medium text-slate-600 dark:text-slate-400 shadow-sm">
                     <UserCircle className="w-4 h-4" />
                     <span className="max-w-[120px] truncate">
-                      {RECITERS.find(r => r.id === selectedReciter)?.name}
+                      {RECITERS[0].name}
                     </span>
-                  </button>
-                  
-                  <AnimatePresence>
-                    {showReciterMenu && (
-                      <motion.div 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        className="absolute top-full mt-2 left-0 w-64 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-xl z-50 py-2"
-                      >
-                        {RECITERS.map(reciter => (
-                          <button
-                            key={reciter.id}
-                            onClick={() => {
-                              setSelectedReciter(reciter.id);
-                              setShowReciterMenu(false);
-                            }}
-                            className={cn(
-                              "w-full text-left px-4 py-2 text-sm transition-colors",
-                              selectedReciter === reciter.id ? "bg-islamic-green/10 dark:bg-emerald-500/20 text-islamic-green dark:text-emerald-400 font-bold" : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
-                            )}
-                          >
-                            {reciter.name}
-                          </button>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  </div>
                 </div>
 
                 <div className="flex bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-full p-1 shadow-sm">

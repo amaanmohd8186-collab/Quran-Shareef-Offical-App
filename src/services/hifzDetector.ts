@@ -2,6 +2,7 @@
 
 export interface HifzMistake {
   word: string;
+  expectedWord: string;
   type: 'missing' | 'incorrect' | 'extra';
   position: number;
 }
@@ -32,7 +33,10 @@ export class HifzDetectorService {
     return data.data.text;
   }
 
+  private isRunning: boolean = false;
+
   async startListening(surahId: number, ayah: number, onResult: (text: string) => void) {
+    if (this.isRunning) return;
     this.expectedText = await this.fetchExpectedText(surahId, ayah);
     
     if (!this.recognition) throw new Error("Speech Recognition not supported");
@@ -42,11 +46,17 @@ export class HifzDetectorService {
       onResult(transcript);
     };
 
+    this.recognition.onend = () => {
+      this.isRunning = false;
+    };
+
     this.recognition.start();
+    this.isRunning = true;
   }
 
   async stopListening(recognizedText: string): Promise<HifzProgress> {
     this.recognition?.stop();
+    this.isRunning = false;
     
     // Simple matching logic
     const safeExpectedText = this.expectedText || "";
@@ -58,7 +68,7 @@ export class HifzDetectorService {
     
     recognizedWords.forEach((word, index) => {
       if (expectedWords[index] !== word) {
-        mistakes.push({ word, type: 'incorrect', position: index });
+        mistakes.push({ word, expectedWord: expectedWords[index] || '', type: 'incorrect', position: index });
       }
     });
 
