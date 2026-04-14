@@ -17,7 +17,7 @@ interface NamazTimesViewProps {
 
 export default function NamazTimesView({ setActiveView }: NamazTimesViewProps) {
   const [times, setTimes] = useState<PrayerTimes | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [location, setLocation] = useState<string | null>(null);
   const [manualCity, setManualCity] = useState('');
