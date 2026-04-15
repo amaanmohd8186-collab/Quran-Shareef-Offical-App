@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Book, MessageSquare, Heart, Clock } from 'lucide-react';
+import { Home, Book, MessageSquare, Heart } from 'lucide-react';
 import { AppView } from '../types';
 import { cn } from '../lib/utils';
 
@@ -14,7 +14,6 @@ export default function BottomNav({ activeView, setActiveView }: BottomNavProps)
     { id: 'quran', label: 'Quran', icon: Book },
     { id: 'assistant', label: 'AI', icon: MessageSquare },
     { id: 'dua', label: 'Duas', icon: Heart },
-    { id: 'namaz_times', label: 'Prayer', icon: Clock },
   ];
 
   return (

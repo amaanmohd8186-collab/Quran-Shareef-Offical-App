@@ -21,8 +21,6 @@ import ZakatCalculatorView from './components/ZakatCalculatorView';
 import IslamicHistoryView from './components/IslamicHistoryView';
 import IslamicQuotesView from './components/IslamicQuotesView';
 import LiveZiyaratView from './components/LiveZiyaratView';
-import NamazTimesView from './components/NamazTimesView';
-import QiblaView from './components/QiblaView';
 import HifzDetectorView from './components/HifzDetectorView';
 import SplashScreen from './components/SplashScreen';
 import { AppView } from './types';
@@ -183,10 +181,6 @@ export default function App() {
         return <IslamicHistoryView setActiveView={handleViewChange} />;
       case 'live_ziyarat':
         return <LiveZiyaratView setActiveView={handleViewChange} />;
-      case 'namaz_times':
-        return <NamazTimesView setActiveView={handleViewChange} />;
-      case 'qibla':
-        return <QiblaView setActiveView={handleViewChange} />;
       case 'hifz_detector':
         return <HifzDetectorView setActiveView={handleViewChange} />;
       case 'islamic_quotes':

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Book, MessageSquare, BrainCircuit, Settings, Moon, Sun, Menu, X, Heart, Compass, Sparkles, Fingerprint, Home, Bell, Calendar as CalendarIcon, Calculator, Video, Users, History as HistoryIcon, Tv, Camera, Clock, Mic, Music } from 'lucide-react';
+import { Book, MessageSquare, BrainCircuit, Settings, Moon, Sun, Menu, X, Heart, Sparkles, Fingerprint, Home, Calendar as CalendarIcon, Calculator, Video, History as HistoryIcon, Camera, Mic, Bell } from 'lucide-react';
 import { AppView } from '../types';
 import { cn } from '../lib/utils';
 import { motion } from 'motion/react';
@@ -41,8 +41,6 @@ export default function Sidebar({ activeView, setActiveView, isOpen, setIsOpen, 
     { id: 'asma_ul_husna', label: '99 Names', icon: Sparkles },
     { id: 'calendar', label: 'Islamic Calendar', icon: CalendarIcon },
     { id: 'zakat_calculator', label: 'Zakat Calculator', icon: Calculator },
-    { id: 'namaz_times', label: 'Prayer Times', icon: Clock },
-    { id: 'qibla', label: 'Qibla Finder', icon: Compass },
     { id: 'hifz_detector', label: 'Hifz Detector', icon: Mic },
     { id: 'prayer_alarm', label: 'Prayer Alarm', icon: Bell },
     { id: 'tasbeeh', label: 'Tasbeeh', icon: Fingerprint },
