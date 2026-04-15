@@ -184,7 +184,7 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
         const data = await response.json();
         
         const tafsirMap: Record<number, string> = {};
-        data.tafsirs.forEach((t: any) => {
+        data.tafsirs.forEach((t: { verse_key: string; text: string }) => {
           const ayahNum = parseInt(t.verse_key.split(':')[1]);
           tafsirMap[ayahNum] = t.text;
         });
@@ -235,8 +235,8 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
         localStorage.setItem(cacheKey, JSON.stringify(map));
       }
       setIsTafsirLoading(false);
-    } catch (err: any) {
-      if (err.name !== 'AbortError') {
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name !== 'AbortError') {
         setTafsirError(err.message || "Could not load Tafsir. Please try again later.");
         setIsTafsirLoading(false);
       }
@@ -509,7 +509,7 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
       const arabicData = await arabicRes.json();
       const translationData = await translationRes.json();
       
-      const combinedAyahs = arabicData.data.ayahs.map((ayah: any, index: number) => ({
+      const combinedAyahs = arabicData.data.ayahs.map((ayah: Ayah, index: number) => ({
         ...ayah,
         translation: translationData.data.ayahs[index].text
       }));
@@ -869,7 +869,7 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
               )}
               
               <div className="w-full space-y-12">
-                {selectedSurah.ayahs.map((ayah: any) => (
+                {selectedSurah.ayahs.map((ayah: Ayah) => (
                   <div 
                     key={ayah.number} 
                     id={`ayah-${ayah.numberInSurah}`}
@@ -890,7 +890,7 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
                         <button 
                           onClick={(e) => {
                             e.stopPropagation();
-                            playAyahAudio(ayah.number, ayah.numberInSurah, ayah.surah?.number || selectedSurah.number);
+                            playAyahAudio(ayah.number, ayah.numberInSurah, selectedSurah.number);
                           }}
                           disabled={isAudioLoading && activeAyahNumber === ayah.number}
                           className={cn(
