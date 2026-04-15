@@ -480,6 +480,24 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
     playAudio(url, { ayahGlobal, ayahInSurah, surahNum });
   };
 
+  const navigateAyah = (direction: 'next' | 'prev') => {
+    if (!selectedSurah || !activeAyahNumber) return;
+    
+    const currentIndex = selectedSurah.ayahs.findIndex(a => a.number === activeAyahNumber);
+    if (currentIndex === -1) return;
+
+    let newIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+    if (newIndex >= 0 && newIndex < selectedSurah.ayahs.length) {
+      const newAyah = selectedSurah.ayahs[newIndex];
+      playAyahAudio(newAyah.number, newAyah.numberInSurah, selectedSurah.number);
+      
+      const element = document.getElementById(`ayah-${newAyah.numberInSurah}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  };
+
   const fetchJuzDetail = async (number: number, translationId = selectedTranslation) => {
     setLoadingDetail(true);
     try {
@@ -855,7 +873,7 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
                   <div 
                     key={ayah.number} 
                     id={`ayah-${ayah.numberInSurah}`}
-                    onClick={() => playAyahAudio(ayah.number, ayah.numberInSurah, ayah.surah?.number || selectedSurah.number)}
+                    onClick={() => playAyahAudio(ayah.number, ayah.numberInSurah, selectedSurah.number)}
                     className={cn(
                       "flex flex-col space-y-6 pb-8 border-bottom border-slate-50 last:border-0 transition-all rounded-2xl p-4 cursor-pointer hover:bg-islamic-green/[0.02]",
                       activeAyahNumber === ayah.number ? "bg-islamic-green/5 dark:bg-emerald-500/10 ring-1 ring-islamic-green/10 shadow-sm" : ""
@@ -1167,6 +1185,14 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
 
               <div className="flex items-center gap-3">
                 <button 
+                  onClick={() => navigateAyah('prev')}
+                  disabled={!activeAyahNumber}
+                  className="p-2 text-slate-400 hover:text-islamic-green dark:hover:text-emerald-400 disabled:opacity-50"
+                  title="Previous Ayah"
+                >
+                  <SkipBack className="w-5 h-5" />
+                </button>
+                <button 
                   onClick={() => {
                     if (audioRef.current) {
                       if (isPlaying) audioRef.current.pause();
@@ -1182,6 +1208,14 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
                   ) : (
                     <Play className="w-5 h-5 ml-0.5" />
                   )}
+                </button>
+                <button 
+                  onClick={() => navigateAyah('next')}
+                  disabled={!activeAyahNumber}
+                  className="p-2 text-slate-400 hover:text-islamic-green dark:hover:text-emerald-400 disabled:opacity-50"
+                  title="Next Ayah"
+                >
+                  <SkipForward className="w-5 h-5" />
                 </button>
               </div>
 
