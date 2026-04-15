@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, ArrowRight, ShieldAlert } from 'lucide-react';
+import { MapPin, ArrowRight, Loader2 } from 'lucide-react';
 
 interface PermissionGuardProps {
   permissionType: 'geolocation';
@@ -12,16 +12,30 @@ export default function PermissionGuard({ permissionType, children, onGranted }:
 
   useEffect(() => {
     if (permissionType === 'geolocation') {
-      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
-        if (result.state === 'granted') {
-          setGranted(true);
-          onGranted();
-        } else {
-          setGranted(false);
-        }
-      });
+      if (navigator.permissions && navigator.permissions.query) {
+        navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+          if (result.state === 'granted') {
+            setGranted(true);
+            onGranted();
+          } else {
+            setGranted(false);
+          }
+        });
+      } else {
+        // Fallback for browsers that don't support permissions.query
+        setGranted(false);
+      }
     }
   }, [permissionType, onGranted]);
+
+  if (granted === null) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+        <Loader2 className="w-10 h-10 animate-spin text-islamic-green mb-4" />
+        <p>Checking permissions...</p>
+      </div>
+    );
+  }
 
   if (granted) {
     return <>{children}</>;

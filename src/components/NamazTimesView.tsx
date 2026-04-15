@@ -37,6 +37,7 @@ export default function NamazTimesView({ setActiveView }: NamazTimesViewProps) {
 
   const handleLocationGranted = () => {
     setLoading(true);
+    setError(null); // Clear previous errors
     navigator.geolocation.getCurrentPosition(
       (position) => {
         fetchPrayerTimes(position.coords.latitude, position.coords.longitude);
@@ -44,7 +45,8 @@ export default function NamazTimesView({ setActiveView }: NamazTimesViewProps) {
       (err) => {
         setError("Location access denied. Please enable location or enter your city manually.");
         setLoading(false);
-      }
+      },
+      { timeout: 10000, enableHighAccuracy: true }
     );
   };
 
