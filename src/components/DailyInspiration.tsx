@@ -2,9 +2,11 @@ import React from 'react';
 import { DAILY_INSPIRATION } from '../constants';
 import { motion } from 'motion/react';
 import { Quote } from 'lucide-react';
+import { cn } from '../lib/utils';
 
-export default function DailyInspiration({ language }: { language: 'en' | 'hi' | 'ur' }) {
+export default function DailyInspiration({ language }: { language: 'en' | 'hi' | 'ur' | 'ar' }) {
   const inspiration = DAILY_INSPIRATION[Math.floor(Math.random() * DAILY_INSPIRATION.length)];
+  const isRTL = language === 'ar' || language === 'ur';
 
   return (
     <motion.div 
@@ -16,11 +18,14 @@ export default function DailyInspiration({ language }: { language: 'en' | 'hi' |
       <Quote className="w-10 h-10 text-islamic-gold/50 mx-auto mb-6" />
       
       <h3 className="text-emerald-400 font-serif font-bold text-xs uppercase tracking-[0.3em] mb-6">
-        {language === 'en' ? 'Daily Reflection' : language === 'hi' ? 'दैनिक चिंतन' : 'روزانہ کا فکر'}
+        {language === 'en' ? 'Daily Reflection' : language === 'hi' ? 'दैनिक चिंतन' : language === 'ur' ? 'روزانہ کا فکر' : 'تأمل يومي'}
       </h3>
       
-      <p className="text-2xl font-serif text-slate-100 leading-relaxed mb-6 italic px-4">
-        "{inspiration.text[language]}"
+      <p className={cn(
+        "text-2xl font-serif text-slate-100 leading-relaxed mb-6 italic px-4 transition-all",
+        isRTL && "font-arabic text-3xl leading-[2.2] not-italic"
+      )}>
+        "{inspiration.text[language] || inspiration.text['en']}"
       </p>
       
       <div className="inline-block px-4 py-1 rounded-full bg-slate-800 border border-slate-700">

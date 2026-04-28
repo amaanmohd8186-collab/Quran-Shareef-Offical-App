@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, BookOpen, ChevronRight, Loader2, Play, Pause, Volume2, SkipBack, SkipForward, Download, CheckCircle2, UserCircle, Languages, X, FileText, Bookmark, BookmarkCheck, Heart, Trash2, ArrowLeft, MessageSquare } from 'lucide-react';
+import { Search, BookOpen, ChevronRight, Loader2, Play, Pause, Volume2, SkipBack, SkipForward, Download, CheckCircle2, UserCircle, Languages, X, FileText, Bookmark, BookmarkCheck, Heart, Trash2, ArrowLeft, MessageSquare, Settings, AlignRight, AlignLeft } from 'lucide-react';
 import { Surah, SurahDetail, Ayah, Bookmark as BookmarkType, AppView } from '../types';
 import { cn, toArabicNumerals } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
@@ -75,6 +75,8 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
   const [activeAyahNumber, setActiveAyahNumber] = useState<number | null>(null);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
+  const [arabicFont, setArabicFont] = useState<'scheherazade' | 'amiri' | 'lateef' | 'kufi'>('scheherazade');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -483,6 +485,7 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
   const navigateAyah = (direction: 'next' | 'prev') => {
     if (!selectedSurah || !activeAyahNumber) return;
     
+    // Find index based on GLOBAL number
     const currentIndex = selectedSurah.ayahs.findIndex(a => a.number === activeAyahNumber);
     if (currentIndex === -1) return;
 
@@ -490,6 +493,8 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
     if (newIndex >= 0 && newIndex < selectedSurah.ayahs.length) {
       const newAyah = selectedSurah.ayahs[newIndex];
       playAyahAudio(newAyah.number, newAyah.numberInSurah, selectedSurah.number);
+      
+      setActiveAyahNumber(newAyah.number); // Update active state
       
       const element = document.getElementById(`ayah-${newAyah.numberInSurah}`);
       if (element) {
@@ -659,17 +664,57 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
                   )}
                 </button>
 
-                {isPlaying && (
-                  <button 
-                    onClick={() => {
-                      if (audioRef.current) audioRef.current.pause();
-                      setIsPlaying(false);
-                      setActiveAyahNumber(null);
-                    }}
-                    className="flex items-center gap-2 px-4 py-2 bg-rose-50 text-rose-600 border border-rose-100 rounded-full text-sm font-bold hover:bg-rose-100 transition-all shadow-sm"
-                  >
-                    <X className="w-4 h-4" /> Stop Audio
-                  </button>
+                {currentAudioUrl && (
+                  <div className="flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-full px-4 py-2 shadow-sm">
+                    <button 
+                      onClick={() => navigateAyah('prev')}
+                      className="p-1.5 text-islamic-green dark:text-emerald-400 hover:bg-islamic-green/10 rounded-full"
+                    >
+                      <SkipBack className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => {
+                        if (audioRef.current) {
+                          if (isPlaying) audioRef.current.pause();
+                          else audioRef.current.play();
+                        }
+                      }}
+                      className="p-2 bg-islamic-green text-white rounded-full hover:bg-opacity-90"
+                    >
+                      {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                    </button>
+                    <button 
+                      onClick={() => navigateAyah('next')}
+                      className="p-1.5 text-islamic-green dark:text-emerald-400 hover:bg-islamic-green/10 rounded-full"
+                    >
+                      <SkipForward className="w-4 h-4" />
+                    </button>
+                    <div className="flex items-center gap-2 text-xs font-mono text-slate-500 dark:text-slate-400 min-w-[70px]">
+                      <span>{formatTime(currentTime)}</span>
+                      <input 
+                        type="range" 
+                        value={currentTime} 
+                        max={duration} 
+                        onChange={(e) => {
+                          if (audioRef.current) audioRef.current.currentTime = Number(e.target.value);
+                          setCurrentTime(Number(e.target.value));
+                        }} 
+                        className="w-20 accent-islamic-green" 
+                      />
+                      <span>{formatTime(duration)}</span>
+                    </div>
+                    <button 
+                        onClick={() => {
+                          if (audioRef.current) audioRef.current.pause();
+                          setIsPlaying(false);
+                          setCurrentAudioUrl(null);
+                          setActiveAyahNumber(null);
+                        }}
+                        className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-full"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                 )}
 
                 <button 
@@ -721,16 +766,6 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
                     <div className="text-right flex flex-col items-end gap-2">
                       <p className="arabic-text text-xl text-islamic-green dark:text-emerald-400">{surah.name}</p>
                       <div className="flex items-center gap-2">
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            playSurahAudio(surah.number);
-                          }}
-                          className="p-1.5 bg-islamic-green/10 text-islamic-green dark:text-emerald-400 rounded-lg hover:bg-islamic-green hover:text-white transition-all"
-                          title="Play Surah"
-                        >
-                          <Play className="w-3 h-3" />
-                        </button>
                         <p className="text-[10px] text-slate-400 uppercase">{surah.numberOfAyahs} Ayahs</p>
                         <button 
                           onClick={(e) => {
@@ -838,6 +873,15 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
                 </div>
               </div>
 
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsSettingsOpen(true)}
+                  className="p-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl text-slate-500 hover:text-islamic-green dark:hover:text-emerald-400 transition-all shadow-sm"
+                  title="Display Settings"
+                >
+                  <Settings className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {audioError && (
@@ -955,7 +999,15 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
                           <Bookmark className={cn("w-4 h-4", bookmarks.find(b => b.id === `ayah:${selectedSurah.number}:${ayah.numberInSurah}`) && "fill-current")} />
                         </button>
                       </div>
-                      <p className="arabic-text text-3xl text-right leading-[2.5] text-slate-800 dark:text-slate-200 flex-1">
+                      <p 
+                        className={cn(
+                          "arabic-text text-3xl text-right leading-[2.8] text-slate-800 dark:text-slate-200 flex-1 transition-all",
+                          arabicFont === 'amiri' && "font-serif",
+                          arabicFont === 'lateef' && "font-arabic-lateef text-4xl",
+                          arabicFont === 'kufi' && "font-arabic-kufi text-2xl"
+                        )}
+                        style={{ direction: 'rtl' }}
+                      >
                         {ayah.text}
                       </p>
                     </div>
@@ -1136,7 +1188,15 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
               
               <div className="p-6 overflow-y-auto flex-1 bg-slate-50 dark:bg-slate-800/50">
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 mb-6">
-                  <p className="arabic-text text-3xl text-right leading-[2.5] text-slate-800 dark:text-slate-200 mb-6">
+                  <p 
+                    className={cn(
+                      "arabic-text text-3xl text-right leading-[2.8] text-slate-800 dark:text-slate-200 mb-6 transition-all",
+                      arabicFont === 'amiri' && "font-serif",
+                      arabicFont === 'lateef' && "font-arabic-lateef text-4xl",
+                      arabicFont === 'kufi' && "font-arabic-kufi text-2xl"
+                    )}
+                    style={{ direction: 'rtl' }}
+                  >
                     {selectedTafsir.text}
                   </p>
                   <p className="text-slate-600 dark:text-slate-400 leading-relaxed italic">
@@ -1159,6 +1219,67 @@ export default function QuranView({ setActiveView, scrollPos, setScrollPos, isSe
                     dangerouslySetInnerHTML={{ __html: tafsirContent }}
                   />
                 ) : null}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Settings Modal */}
+      <AnimatePresence>
+        {isSettingsOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
+            onClick={() => setIsSettingsOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-xl overflow-hidden"
+            >
+              <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">Quran Display Settings</h3>
+                <button onClick={() => setIsSettingsOpen(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                  <X className="w-5 h-5 text-slate-400" />
+                </button>
+              </div>
+              <div className="p-6 space-y-6">
+                <div>
+                  <label className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-3">Arabic Font</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { id: 'scheherazade', name: 'Standard (Scheherazade)', fontClass: 'font-arabic' },
+                      { id: 'amiri', name: 'Classic (Amiri)', fontClass: 'font-serif' },
+                      { id: 'lateef', name: 'Indo-Pak (Lateef)', fontClass: 'font-arabic-lateef' },
+                      { id: 'kufi', name: 'Modern (Reem Kufi)', fontClass: 'font-arabic-kufi' },
+                    ].map((font) => (
+                      <button
+                        key={font.id}
+                        onClick={() => setArabicFont(font.id as any)}
+                        className={cn(
+                          "p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 text-center",
+                          arabicFont === font.id
+                            ? "border-islamic-green bg-islamic-green/5 text-islamic-green dark:border-emerald-400 dark:bg-emerald-400/10 dark:text-emerald-400"
+                            : "border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 text-slate-600 dark:text-slate-400"
+                        )}
+                      >
+                        <span className={cn("text-2xl leading-none", font.fontClass)}>ع</span>
+                        <span className="text-xs font-medium">{font.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="pt-4">
+                  <p className="text-xs text-slate-400 italic text-center">
+                    Settings are applied automatically to all views.
+                  </p>
+                </div>
               </div>
             </motion.div>
           </motion.div>

@@ -70,8 +70,19 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAlarmPlaying, setIsAlarmPlaying] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [language, setLanguage] = useState<'en' | 'hi' | 'ur'>('en');
+  const [language, setLanguage] = useState<'en' | 'hi' | 'ur' | 'ar'>('en');
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    // Handle RTL for Arabic and Urdu
+    if (language === 'ar' || language === 'ur') {
+      document.documentElement.dir = 'rtl';
+      document.documentElement.lang = language;
+    } else {
+      document.documentElement.dir = 'ltr';
+      document.documentElement.lang = language;
+    }
+  }, [language]);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
@@ -170,7 +181,7 @@ export default function App() {
       case 'hidayat':
         return <HidayatView setActiveView={handleViewChange} />;
       case 'quiz':
-        return <QuizView setActiveView={handleViewChange} />;
+        return <QuizView setActiveView={handleViewChange} language={language} />;
       case 'asma_ul_husna':
         return <AsmaUlHusnaView setActiveView={handleViewChange} />;
       case 'calendar':
@@ -188,7 +199,7 @@ export default function App() {
       case 'prayer_alarm':
         return <PrayerAlarmView setActiveView={handleViewChange} isAlarmPlaying={isAlarmPlaying} stopAlarm={stopAlarm} />;
       case 'settings':
-        return <SettingsView setActiveView={handleViewChange} />;
+        return <SettingsView setActiveView={handleViewChange} language={language} setLanguage={setLanguage} />;
       case 'privacy':
         return <PrivacyView setActiveView={handleViewChange} />;
       default:
@@ -234,6 +245,8 @@ export default function App() {
         setIsOpen={setIsSidebarOpen}
         theme={theme}
         toggleTheme={toggleTheme}
+        language={language}
+        setLanguage={setLanguage}
       />
       
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -293,7 +306,7 @@ export default function App() {
             </AnimatePresence>
           </div>
         </div>
-        <BottomNav activeView={activeView} setActiveView={handleViewChange} />
+        <BottomNav activeView={activeView} setActiveView={handleViewChange} language={language} />
       </main>
     </div>
   );

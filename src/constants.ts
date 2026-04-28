@@ -6,18 +6,21 @@ export const ISLAMIC_QUIZ_QUESTIONS: QuizQuestion[] = [
     question: {
       en: "How many Surahs are there in the Holy Quran?",
       hi: "पवित्र कुरान में कितनी सूरह हैं?",
-      ur: "قرآن پاک میں کتنی سورتیں ہیں؟"
+      ur: "قرآن پاک میں کتنی سورتیں ہیں؟",
+      ar: "كم عدد السور في القرآن الكريم؟"
     },
     options: {
       en: ["110", "114", "120", "118"],
       hi: ["110", "114", "120", "118"],
-      ur: ["110", "114", "120", "118"]
+      ur: ["110", "114", "120", "118"],
+      ar: ["١١٠", "١١٤", "١٢٠", "١١٨"]
     },
     correctAnswer: 1,
     explanation: {
       en: "The Holy Quran consists of 114 Surahs (chapters).",
       hi: "पवित्र कुरान में 114 सूरह (अध्याय) हैं।",
-      ur: "قرآن پاک 114 سورتوں پر مشتمل ہے۔"
+      ur: "قرآن پاک 114 سورتوں پر مشتمل ہے۔",
+      ar: "يتكون القرآن الكريم من ١١٤ سورة."
     },
     imageUrl: "https://picsum.photos/seed/quran/400/200"
   },
@@ -375,7 +378,8 @@ export const DAILY_INSPIRATION = [
     text: {
       en: "And whoever relies upon Allah - then He is sufficient for him.",
       hi: "और जो अल्लाह पर भरोसा करता है, तो वह उसके लिए काफी है।",
-      ur: "اور جو اللہ پر بھروسہ کرتا ہے، تو وہ اس کے لیے کافی ہے۔"
+      ur: "اور جو اللہ پر بھروسہ کرتا ہے، تو وہ اس کے لیے کافی ہے۔",
+      ar: "وَمَن يَتَوَكَّلْ عَلَى اللَّهِ فَهُوَ حَسْبُهُ"
     },
     reference: "Surah At-Talaq 65:3"
   },
@@ -384,7 +388,8 @@ export const DAILY_INSPIRATION = [
     text: {
       en: "Indeed, with hardship [will be] ease.",
       hi: "निस्संदेह, कठिनाई के साथ आसानी है।",
-      ur: "بیشک مشکل کے ساتھ آسانی ہے۔"
+      ur: "بیشک مشکل کے ساتھ آسانی ہے۔",
+      ar: "إِنَّ مَعَ الْعُسْرِ يُسْرًا"
     },
     reference: "Surah Ash-Sharh 94:5"
   },
@@ -393,7 +398,8 @@ export const DAILY_INSPIRATION = [
     text: {
       en: "So remember Me; I will remember you.",
       hi: "तो मुझे याद करो; मैं तुम्हें याद रखूँगा।",
-      ur: "پس تم مجھے یاد کرو، میں تمہیں یاد کروں گا۔"
+      ur: "پس تم مجھے یاد کرو، میں تمہیں یاد کروں گا۔",
+      ar: "فَاذْكُرُونِي أَذْكُرْكُمْ"
     },
     reference: "Surah Al-Baqarah 2:152"
   }

@@ -1,12 +1,13 @@
-import React from 'react';
-import { Heart, Mail, Shield, User, ExternalLink, Coffee, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Languages, Heart, Mail, Shield, User, ExternalLink, Coffee, ArrowRight, ArrowLeft } from 'lucide-react';
 import { AppView } from '../types';
 
 interface SettingsViewProps {
   setActiveView: (view: AppView) => void;
+  language: 'en' | 'hi' | 'ur' | 'ar';
+  setLanguage: (lang: 'en' | 'hi' | 'ur' | 'ar') => void;
 }
 
-export default function SettingsView({ setActiveView }: SettingsViewProps) {
+export default function SettingsView({ setActiveView, language, setLanguage }: SettingsViewProps) {
   const upiId = "9719818918@ybl";
   const upiLink = `upi://pay?pa=${upiId}&pn=Amaan%20Siddiqui&cu=INR`;
   const contactEmail = "amaanmohd8186@gmail.com";
@@ -22,7 +23,35 @@ export default function SettingsView({ setActiveView }: SettingsViewProps) {
 
       <div className="text-center space-y-2">
         <h2 className="text-3xl font-serif font-bold text-islamic-green dark:text-emerald-400">Settings & About</h2>
-        <p className="text-slate-500 dark:text-slate-400">Manage your preferences and learn more about Quran Sharif Official App.</p>
+        <p className="text-slate-500 dark:text-slate-400">Manage your preferences and learn more about Quran Shareef App.</p>
+      </div>
+
+      {/* Language Settings */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800 space-y-4">
+        <div className="flex items-center gap-3 text-islamic-green dark:text-emerald-400">
+          <Languages className="w-6 h-6" />
+          <h3 className="text-xl font-bold">App Language</h3>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {[
+            { id: 'en', label: 'English' },
+            { id: 'hi', label: 'हिंदी' },
+            { id: 'ur', label: 'اردو' },
+            { id: 'ar', label: 'العربية' }
+          ].map((lang) => (
+            <button
+              key={lang.id}
+              onClick={() => setLanguage(lang.id as any)}
+              className={`p-3 rounded-2xl border-2 transition-all font-medium ${
+                language === lang.id 
+                  ? 'border-islamic-green bg-islamic-green/5 text-islamic-green dark:text-emerald-400 dark:border-emerald-400' 
+                  : 'border-slate-100 dark:border-slate-800 text-slate-500 bg-transparent hover:border-slate-200 dark:hover:border-slate-700'
+              }`}
+            >
+              {lang.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Developer Info */}
@@ -46,7 +75,7 @@ export default function SettingsView({ setActiveView }: SettingsViewProps) {
           <Heart className="w-8 h-8 text-islamic-green dark:text-emerald-400 fill-islamic-green/20" />
         </div>
         <div className="space-y-2">
-          <h3 className="text-2xl font-serif font-bold text-islamic-green dark:text-emerald-400">Support Quran Sharif Official App</h3>
+          <h3 className="text-2xl font-serif font-bold text-islamic-green dark:text-emerald-400">Support Quran Shareef App</h3>
           <p className="text-slate-600 dark:text-slate-400 text-sm max-w-md mx-auto">
             If you find this app helpful, consider supporting its development. Your contributions help keep the app ad-free and updated.
           </p>
@@ -124,7 +153,7 @@ export default function SettingsView({ setActiveView }: SettingsViewProps) {
       </div>
 
       <div className="text-center pt-8">
-        <p className="text-[10px] text-slate-400 uppercase tracking-[0.3em] font-bold">Quran Sharif Official App v1.0.0</p>
+        <p className="text-[10px] text-slate-400 uppercase tracking-[0.3em] font-bold">Quran Shareef App v1.0.0</p>
       </div>
     </div>
   );

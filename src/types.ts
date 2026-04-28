@@ -30,17 +30,20 @@ export interface QuizQuestion {
     en: string;
     hi: string;
     ur: string;
+    ar?: string;
   };
   options: {
     en: string[];
     hi: string[];
     ur: string[];
+    ar?: string[];
   };
   correctAnswer: number;
   explanation: {
     en: string;
     hi: string;
     ur: string;
+    ar?: string;
   };
   imageUrl?: string;
 }

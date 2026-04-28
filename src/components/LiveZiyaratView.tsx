@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowLeft } from 'lucide-react';
 import { AppView } from '../types';
+import AdBanner from './AdBanner';
 
 interface LiveZiyaratViewProps {
   setActiveView: (view: AppView) => void;
@@ -67,6 +68,8 @@ export default function LiveZiyaratView({ setActiveView }: LiveZiyaratViewProps)
           </button>
           <h2 className="text-2xl font-serif font-bold text-slate-800 dark:text-slate-100">Live Ziyarat</h2>
         </div>
+
+        <AdBanner />
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 space-y-4">
