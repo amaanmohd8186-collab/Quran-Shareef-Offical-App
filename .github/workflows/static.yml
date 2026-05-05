@@ -23,20 +23,13 @@ jobs:
         with:
           node-version: 18
 
-      # 🔥 IMPORTANT FIX (npm bug)
-      - name: Clean install fix
-        run: |
-          rm -rf node_modules
-          rm -f package-lock.json
-
-      - name: Install dependencies (force fix)
-        run: npm install --force
-
-      - name: Rebuild native modules
-        run: npm rebuild
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
 
       - name: Build project
         run: npm run build
+        env:
+          TAILWIND_DISABLE_OXIDE: true
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
