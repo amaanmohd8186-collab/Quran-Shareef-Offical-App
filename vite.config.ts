@@ -6,16 +6,22 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
 
   return {
-    base: "/Quran-Shareef-Offical-App/",  
+    base: "/Quran-Shareef-Offical-App/",
+
+    publicDir: "public",   // ✅ YE LINE ADD KI (IMPORTANT)
+
     plugins: [react()],
+
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
     },
+
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
       },
     },
+
     server: {
       hmr: process.env.DISABLE_HMR !== 'true',
     },
